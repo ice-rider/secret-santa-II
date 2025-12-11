@@ -12,7 +12,7 @@ public class User
 
     public UserCredentials? Credential { get; set; }
     
-    public required IEnumerable<GameMember> GameMembers { get; init; }
+    public ICollection<GameMember> GameMembers { get; init; }
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
