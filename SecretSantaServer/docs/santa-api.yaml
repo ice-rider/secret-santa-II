@@ -1,0 +1,203 @@
+openapi: 3.0.0
+info:
+  title: Secret Santa Service
+  version: 1.0.0
+paths:
+  /login:
+    post:
+      summary: Telegram OAuth2 login
+      description: Authenticate via Telegram OAuth2
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      security: []
+  
+  /groups:
+    post:
+      summary: Create new group
+      description: Admin (current user) creates a new group
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Christmas 2025"
+      responses:
+        '201':
+          description: Group created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+  
+  /groups/{groupId}/start:
+    post:
+      summary: Start Secret Santa in group
+      description: Admin starts the game (generates pairs)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Game started successfully
+  
+  /groups/{groupId}:
+    delete:
+      summary: Delete group
+      description: Admin deletes the group
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Group deleted
+  
+  /groups/{groupId}/users:
+    get:
+      summary: Get group members
+      description: List all users in the group
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupUser'
+  
+  /groups/{groupId}/users/{userId}:
+    get:
+      summary: Get user's Secret Santa info
+      description: Get user's name and message for Secret Santa (only for participants)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupUser'
+    
+    post:
+      summary: Add user to group
+      description: Admin adds user to group (or user joins via link)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: User added to group
+    
+    delete:
+      summary: Remove user from group
+      description: Admin or user removes from group
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: User removed
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Group:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        admin_id:
+          type: integer
+        join_link:
+          type: string
+      example:
+        id: 1
+        name: "Christmas 2025"
+        admin_id: 101
+        join_link: "/join/abc123"
+    
+    GroupUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        message:
+          type: string
+      example:
+        id: 102
+        name: "Иван Иванов"
+        message: "Хочу книгу по программированию"
