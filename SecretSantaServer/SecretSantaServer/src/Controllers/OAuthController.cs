@@ -13,6 +13,9 @@ public class OAuthController : ControllerBase
     private readonly IOAuthService _oAuthService;
     private readonly IConfiguration _config;
 
+    private const string GoogleOAuthUri = "https://accounts.google.com/o/oauth2/v2/auth";
+    private const string GithubOAuthUri = "https://github.com/login/oauth/authorize";
+
     public OAuthController(IOAuthService oAuthService, IConfiguration configuration)
     {
         _oAuthService = oAuthService;
@@ -28,7 +31,6 @@ public class OAuthController : ControllerBase
         var clientId = _config["OAuth:Google:ClientId"]!;
         var redirectUri = $"{Request.Scheme}://{Request.Host}/api/oauth/google/callback";
         var scope = "openid email profile";
-        Console.WriteLine(redirectUri);
 
         var queryParams = new Dictionary<string, string>
         {
@@ -40,8 +42,7 @@ public class OAuthController : ControllerBase
             ["state"] = state,
         };
 
-        var url = (QueryHelpers.AddQueryString("https://accounts.google.com/o/oauth2/v2/auth", queryParams!));
-        Console.WriteLine(url);
+        var url = QueryHelpers.AddQueryString(GoogleOAuthUri, queryParams!);
         return Redirect(url);
     }
 
@@ -63,7 +64,7 @@ public class OAuthController : ControllerBase
             ["state"] = state,
         };
 
-        return Redirect(QueryHelpers.AddQueryString("https://github.com/login/oauth/authorize", queryParams));
+        return Redirect(QueryHelpers.AddQueryString(GithubOAuthUri, queryParams));
     }
 
     [HttpGet("google/callback")]
@@ -99,8 +100,9 @@ public class OAuthController : ControllerBase
         var authError = CheckOAuthParameters(code, state, error);
         if (authError != null)
             return authError;
-
-        var result = await _oAuthService.OAuthLogin(code, state, provider);
+        
+        var redirectUri = $"{Request.Scheme}://{Request.Host}/api/oauth/{provider.ToString().ToLower()}/callback";
+        var result = await _oAuthService.OAuthLogin(code, state, provider, redirectUri);
         if (!result.IsSuccess)
             return Redirect(GetRedirectUrlWithError(result.Error));
 

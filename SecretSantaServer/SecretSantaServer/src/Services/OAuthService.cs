@@ -26,15 +26,16 @@ public class OAuthService : IOAuthService
         _oAuthClients[OAuthProvider.Github] = githubOAuthClient;
     }
 
-    public async Task<Result<UserAndTokensDto>> OAuthLogin(string code, string state, OAuthProvider provider)
+    public async Task<Result<UserAndTokensDto>> OAuthLogin(string code, string state, OAuthProvider provider,
+        string redirectUri)
     {
         var client = _oAuthClients[provider];
         await using var transaction = await _dbContext.BeginTransactionAsync();
         try
         {
-            var userInfo = await client.GetUserInfoAsync(code);
+            var userInfo = await client.GetUserInfoAsync(code, redirectUri);
             if (userInfo.ProviderId == null)
-                return Result<UserAndTokensDto>.Failure("Provider Id Is Missing", ErrorCode.InvalidCredentials);
+                return Result<UserAndTokensDto>.Failure("Provider Id Is Missing", StatusCodes.Status401Unauthorized);
 
             var userByProviderId = await _dbContext.Users.AsNoTracking()
                 .Include(x => x.Credential)
@@ -51,7 +52,7 @@ public class OAuthService : IOAuthService
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            return Result<UserAndTokensDto>.Failure(ex.Message, ErrorCode.InternalServerError);
+            return Result<UserAndTokensDto>.Failure(ex.Message, StatusCodes.Status500InternalServerError);
         }
     }
 
@@ -68,9 +69,9 @@ public class OAuthService : IOAuthService
         var isNewUser = false;
         if (userByEmail != null)
         {
-            if(OAuthProvider.Google == provider)
+            if (OAuthProvider.Google == provider)
                 userByEmail.Credential!.GoogleId = userInfo.ProviderId;
-            else if(OAuthProvider.Github == provider)
+            else if (OAuthProvider.Github == provider)
                 userByEmail.Credential!.GithubId = userInfo.ProviderId;
             _dbContext.Users.Update(userByEmail);
             await _dbContext.SaveChangesAsync();
