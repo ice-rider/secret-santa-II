@@ -1,14 +1,31 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SecretSantaServer.Models;
 
 namespace SecretSantaServer.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IDbContext
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Game> Games { get; set; }
     public DbSet<GameMember> GameMembers { get; set; }
     public DbSet<Assignment> Assignments { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+    
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        return await Database.BeginTransactionAsync(cancellationToken);
+    }
+
+    public async Task CommitTransactionAsync(IDbContextTransaction transaction, CancellationToken cancellationToken = default)
+    {
+        await transaction.CommitAsync(cancellationToken);
+    }
+
+    public async Task RollbackTransactionAsync(IDbContextTransaction transaction, CancellationToken cancellationToken = default)
+    {
+        await transaction.RollbackAsync(cancellationToken);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

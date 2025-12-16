@@ -1,6 +1,6 @@
 namespace SecretSantaServer.Services;
 
-public class UserService : IAuthService
+public class UserService : IUserService
 {
     
 }
