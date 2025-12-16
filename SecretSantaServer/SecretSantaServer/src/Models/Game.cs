@@ -7,7 +7,7 @@ namespace SecretSantaServer.Models;
 public class Game
 {
     [Key] public int Id { get; init; }
-    public required string Title { get; init; }
+    public string Title { get; set; }
     public string? Description { get; set; }
     public string Code { get; init; } = null!;
 
