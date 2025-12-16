@@ -7,6 +7,7 @@ namespace SecretSantaServer.Data;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IDbContext
 {
     public DbSet<User> Users { get; set; }
+    public DbSet<UserCredentials> Credentials { get; set; }
     public DbSet<Game> Games { get; set; }
     public DbSet<GameMember> GameMembers { get; set; }
     public DbSet<Assignment> Assignments { get; set; }

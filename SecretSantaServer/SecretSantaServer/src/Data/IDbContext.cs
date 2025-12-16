@@ -7,6 +7,7 @@ namespace SecretSantaServer.Data;
 public interface IDbContext
 {
     DbSet<User> Users { get; set; }
+    DbSet<UserCredentials> Credentials { get; set; }
     DbSet<Game> Games { get; set; }
     DbSet<GameMember> GameMembers { get; set; }
     DbSet<Assignment> Assignments { get; set; }
