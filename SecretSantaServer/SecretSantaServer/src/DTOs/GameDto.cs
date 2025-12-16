@@ -1,3 +1,4 @@
+using SecretSantaServer.Enums;
 using SecretSantaServer.Models;
 
 namespace SecretSantaServer.DTOs;

@@ -12,8 +12,8 @@ using SecretSantaServer.Data;
 namespace SecretSantaServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251211093130_refresh_token_added")]
-    partial class refresh_token_added
+    [Migration("20251216152616_auth")]
+    partial class auth
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -199,6 +199,24 @@ namespace SecretSantaServer.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_users");
+
+                    b.ToTable("users", (string)null);
+                });
+
+            modelBuilder.Entity("SecretSantaServer.Models.UserCredentials", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
                     b.Property<string>("Email")
                         .HasColumnType("text")
                         .HasColumnName("email");
@@ -211,12 +229,6 @@ namespace SecretSantaServer.Migrations
                         .HasColumnType("text")
                         .HasColumnName("google_id");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("name");
-
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
@@ -225,26 +237,26 @@ namespace SecretSantaServer.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("telegram_id");
 
-                    b.HasKey("Id")
-                        .HasName("pk_users");
+                    b.HasKey("UserId")
+                        .HasName("pk_user_auth_data");
 
                     b.HasIndex("Email")
                         .IsUnique()
-                        .HasDatabaseName("ix_users_email");
+                        .HasDatabaseName("ix_user_auth_data_email");
 
                     b.HasIndex("GithubId")
                         .IsUnique()
-                        .HasDatabaseName("ix_users_github_id");
+                        .HasDatabaseName("ix_user_auth_data_github_id");
 
                     b.HasIndex("GoogleId")
                         .IsUnique()
-                        .HasDatabaseName("ix_users_google_id");
+                        .HasDatabaseName("ix_user_auth_data_google_id");
 
                     b.HasIndex("TelegramId")
                         .IsUnique()
-                        .HasDatabaseName("ix_users_telegram_id");
+                        .HasDatabaseName("ix_user_auth_data_telegram_id");
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("user_auth_data", (string)null);
                 });
 
             modelBuilder.Entity("SecretSantaServer.Models.Assignment", b =>
@@ -309,6 +321,18 @@ namespace SecretSantaServer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SecretSantaServer.Models.UserCredentials", b =>
+                {
+                    b.HasOne("SecretSantaServer.Models.User", "User")
+                        .WithOne("Credential")
+                        .HasForeignKey("SecretSantaServer.Models.UserCredentials", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_auth_data_users_user_id");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("SecretSantaServer.Models.Game", b =>
                 {
                     b.Navigation("GameMembers");
@@ -316,6 +340,8 @@ namespace SecretSantaServer.Migrations
 
             modelBuilder.Entity("SecretSantaServer.Models.User", b =>
                 {
+                    b.Navigation("Credential");
+
                     b.Navigation("GameMembers");
                 });
 #pragma warning restore 612, 618

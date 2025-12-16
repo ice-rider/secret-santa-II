@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using SecretSantaServer.Enums;
 
 namespace SecretSantaServer.Models;
 
@@ -9,7 +10,7 @@ public class Game
     [Key] public int Id { get; init; }
     public string Title { get; set; }
     public string? Description { get; set; }
-    public string Code { get; init; } = null!;
+    public string? Code { get; set; }
 
     public int AdminId { get; set; }
     public User Admin { get; set; } = null!;
@@ -19,12 +20,4 @@ public class Game
     public DateTime? StartsAt { get; set; }
     public DateTime? StartedAt { get; set; }
     public DateTime? FinishedAt { get; set; }
-}
-
-public enum GameStatus
-{
-    Created,
-    Started,
-    Cancelled,
-    Finished
 }

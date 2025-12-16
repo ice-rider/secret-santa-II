@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretSantaServer.DTOs;
+using SecretSantaServer.Enums;
 using SecretSantaServer.Services;
 
 namespace SecretSantaServer.Controllers;
@@ -26,7 +27,7 @@ public class GameController : ControllerBase
         if (!result.IsSuccess)
             return StatusCode(result.StatusCode, new{result.Error});
         
-        return CreatedAtRoute(result.Value!.Id.ToString(), result.Value);
+        return CreatedAtAction(nameof(GetGameById), new{result.Value!.Id}, result.Value);
     }
     
     [HttpGet("{id}")]
@@ -52,18 +53,44 @@ public class GameController : ControllerBase
         
         return Ok(result.Value);
     }
-
-    [HttpDelete("{gameId}")]
+    
+    [HttpPut("{gameId}/start")]
     [Authorize]
-    public async Task<IActionResult> DeleteGame(int gameId)
+    public async Task<IActionResult> StartGame(int gameId)
     {
         var userId=GetUserId();
-        var result = await _gameService.DeleteGame(gameId, userId);
+        var result = await _gameService.ChangeStatusGame(gameId,userId,GameStatus.Created,GameStatus.Started);
+        
+        if (!result.IsSuccess)
+            return StatusCode(result.StatusCode, new{result.Error});
+        
+        return Ok(result.Value);
+    }
+
+    [HttpPut("{gameId}/cancel")]
+    [Authorize]
+    public async Task<IActionResult> CancelGame(int gameId)
+    {
+        var userId=GetUserId();
+        var result = await _gameService.ChangeStatusGame(gameId, userId,GameStatus.Created,GameStatus.Cancelled);
         
         if(!result.IsSuccess)
             return StatusCode(result.StatusCode, result.Error);
         
-        return NoContent();
+        return Ok(result.Value);
+    }
+    
+    [HttpPut("{gameId}/finish")]
+    [Authorize]
+    public async Task<IActionResult> FinishGame(int gameId)
+    {
+        var userId=GetUserId();
+        var result = await _gameService.ChangeStatusGame(gameId, userId,GameStatus.Started,GameStatus.Finished);
+        
+        if(!result.IsSuccess)
+            return StatusCode(result.StatusCode, result.Error);
+        
+        return Ok(result.Value);
     }
     
     private int GetUserId()
