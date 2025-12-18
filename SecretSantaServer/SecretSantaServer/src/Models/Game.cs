@@ -14,6 +14,7 @@ public class Game
 
     public int AdminId { get; set; }
     public User Admin { get; set; } = null!;
+    public bool IsAdminParticipating { get; set; } = true;
     public ICollection<GameMember> GameMembers { get; init; } = null!;
 
     public GameStatus Status { get; set; } = GameStatus.Created;

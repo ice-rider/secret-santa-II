@@ -93,6 +93,40 @@ public class GameController : ControllerBase
         return Ok(result.Value);
     }
     
+    [HttpPut("{gameCode}/join")]
+    public async Task<IActionResult> JoinGame(string gameCode)
+    {
+        var userId=GetUserId();
+        var result = await _gameService.JoinGame(gameCode, userId);
+        if(!result.IsSuccess)
+            return StatusCode(result.StatusCode, result.Error);
+        
+        return Ok(result.Value);
+    }
+    
+    [HttpPut("{gameId}/exit")]
+    public async Task<IActionResult> ExitGame(int gameId)
+    {
+        var userId=GetUserId();
+        var result = await _gameService.ExitGame(gameId, userId);
+        if(!result.IsSuccess)
+            return StatusCode(result.StatusCode, result.Error);
+        
+        return Ok(result.Value);
+    }
+    
+    [HttpDelete("{gameId}/members/{memberId}")]
+    [Authorize]
+    public async Task<IActionResult> RemoveMember(int gameId, int memberId)
+    {
+        var userId=GetUserId();
+        var result = await _gameService.RemoveMember(gameId, memberId, userId);
+        if(!result.IsSuccess)
+            return StatusCode(result.StatusCode, result.Error);
+        
+        return Ok(result.Value);
+    }
+    
     private int GetUserId()
     {
         var userId=int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);

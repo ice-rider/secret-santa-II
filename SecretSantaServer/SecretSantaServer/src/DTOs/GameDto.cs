@@ -11,6 +11,7 @@ public class GameDto
     public string Code { get; init; } = null!;
 
     public int AdminId { get; set; }
+    public IEnumerable<UserProfileDto> Members { get; set; }
 
     public GameStatus Status { get; set; } = GameStatus.Created;
     public DateTime? StartsAt { get; set; }
@@ -28,5 +29,9 @@ public class GameDto
         StartsAt = game.StartsAt;
         StartedAt = game.StartedAt;
         FinishedAt = game.FinishedAt;
+        if (game.GameMembers == null || game.GameMembers.Count == 0)
+            Members = null;
+        else if(game.GameMembers.ToList()[0].User!=null)
+            Members = game.GameMembers.Select(x => new UserProfileDto(x.User)).ToList();
     }
 }

@@ -9,6 +9,8 @@ public class UpdateGameRequest
     
     [MaxLength(256)]
     public string? Description { get; set; }
+
+    public bool IsAdminParticipating;
     
     public DateTime? StartsAt { get; set; }
 }
