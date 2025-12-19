@@ -18,7 +18,7 @@ public class Game
     public ICollection<GameMember> GameMembers { get; init; } = null!;
 
     public GameStatus Status { get; set; } = GameStatus.Created;
-    public DateTime? StartsAt { get; set; }
+    public DateTime? ScheduledAt { get; set; }
     public DateTime? StartedAt { get; set; }
     public DateTime? FinishedAt { get; set; }
 }

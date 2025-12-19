@@ -26,7 +26,7 @@ public class GameDto
         Code = game.Code;
         AdminId = game.AdminId;
         Status = game.Status;
-        StartsAt = game.StartsAt;
+        StartsAt = game.ScheduledAt;
         StartedAt = game.StartedAt;
         FinishedAt = game.FinishedAt;
         if (game.GameMembers == null || game.GameMembers.Count == 0)

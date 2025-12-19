@@ -9,6 +9,7 @@ namespace SecretSantaServer.Services;
 public class GameService : IGameService
 {
     private readonly ApplicationDbContext _dbContext;
+    private const string CharsForCode = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     public GameService(ApplicationDbContext dbContext)
     {
@@ -32,7 +33,7 @@ public class GameService : IGameService
             Code = uniqueCode,
             IsAdminParticipating = request.IsAdminParticipating,
             Status = GameStatus.Created,
-            StartsAt = request.StartsAt
+            ScheduledAt = request.StartsAt
         };
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
@@ -106,7 +107,7 @@ public class GameService : IGameService
 
         game.Title = request.Title;
         game.Description = request.Description;
-        game.StartsAt = request.StartsAt;
+        game.ScheduledAt = request.StartsAt;
         game.IsAdminParticipating = request.IsAdminParticipating;
 
         _dbContext.Games.Update(game);
@@ -136,7 +137,7 @@ public class GameService : IGameService
         if (newStatus == GameStatus.Started || newStatus == GameStatus.Cancelled)
         {
             game.Code = null;
-            game.StartsAt = null;
+            game.ScheduledAt = null;
         }
 
         if (newStatus == GameStatus.Started)
@@ -171,7 +172,7 @@ public class GameService : IGameService
 
         return Result<GameDto>.Success(new GameDto(game));
     }
-    
+
     public async Task<Result<GameDto>> ExitGame(int gameId, int userId)
     {
         var game = await _dbContext.Games.Include(x => x.GameMembers)
@@ -179,18 +180,18 @@ public class GameService : IGameService
 
         if (game == null)
             return Result<GameDto>.Failure($"Game {gameId} not found", StatusCodes.Status404NotFound);
-        
-        var user=game.GameMembers.FirstOrDefault(m => m.UserId == userId);
-        if (user==null)
+
+        var user = game.GameMembers.FirstOrDefault(m => m.UserId == userId);
+        if (user == null)
             return Result<GameDto>.Failure($"User {userId} not found in game", StatusCodes.Status404NotFound);
-        
-        if(userId==game.AdminId)
+
+        if (userId == game.AdminId)
             return Result<GameDto>.Failure("Admin can't exit game", StatusCodes.Status400BadRequest);
-        
+
         if (game.Status != GameStatus.Created)
             return Result<GameDto>.Failure("You can't exit after the game has started.",
                 StatusCodes.Status400BadRequest);
-        
+
         _dbContext.GameMembers.Remove(user);
         await _dbContext.SaveChangesAsync();
 
@@ -222,22 +223,20 @@ public class GameService : IGameService
         if (game.Status != GameStatus.Created)
             return Result<bool>.Failure("You can't remove a player after the game has started.",
                 StatusCodes.Status400BadRequest);
-
         _dbContext.GameMembers.Remove(member);
         await _dbContext.SaveChangesAsync();
 
         return Result<bool>.Success(true);
     }
-    
+
     private async Task<string> GenerateUniqueGameCodeAsync(int length = 6)
     {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         var random = new Random();
         string code;
 
         do
         {
-            code = new string(Enumerable.Repeat(chars, length)
+            code = new string(Enumerable.Repeat(CharsForCode, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         } while (await _dbContext.Games.AnyAsync(g => g.Code == code));
 

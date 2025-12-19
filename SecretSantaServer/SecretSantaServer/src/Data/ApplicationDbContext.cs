@@ -41,7 +41,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             game.HasKey(x => x.Id);
 
             game.Property(x => x.Title).IsRequired().HasMaxLength(32);
-            game.Property(x => x.Description).HasMaxLength(256);
+            game.Property(x => x.Description).HasMaxLength(512);
             game.HasIndex(x => x.Code).IsUnique();
 
             game.HasOne(x => x.Admin)
