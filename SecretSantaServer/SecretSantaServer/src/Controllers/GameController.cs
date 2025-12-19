@@ -54,7 +54,7 @@ public class GameController : ControllerBase
         return Ok(result.Value);
     }
     
-    [HttpPut("{gameId}/start")]
+    [HttpPost("{gameId}/start")]
     [Authorize]
     public async Task<IActionResult> StartGame(int gameId)
     {
@@ -67,7 +67,7 @@ public class GameController : ControllerBase
         return Ok(result.Value);
     }
 
-    [HttpPut("{gameId}/cancel")]
+    [HttpPost("{gameId}/cancel")]
     [Authorize]
     public async Task<IActionResult> CancelGame(int gameId)
     {
@@ -80,7 +80,7 @@ public class GameController : ControllerBase
         return Ok(result.Value);
     }
     
-    [HttpPut("{gameId}/finish")]
+    [HttpPost("{gameId}/finish")]
     [Authorize]
     public async Task<IActionResult> FinishGame(int gameId)
     {
