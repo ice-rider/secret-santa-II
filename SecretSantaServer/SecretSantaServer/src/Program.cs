@@ -15,10 +15,11 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IAccessTokenGenerator, JwtAccessTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IOAuthService, OAuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpClient<GoogleOAuthClient>();
 builder.Services.AddHttpClient<GithubOAuthClient>();
-builder.Services.AddScoped<IAuthService, AuthService>();
 
 var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
 builder.Services.AddDbContext<IDbContext, ApplicationDbContext>(options =>
