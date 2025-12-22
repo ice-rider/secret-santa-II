@@ -1,19 +1,32 @@
+using System.Collections.Concurrent;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Expressions.Internal;
 using SecretSantaServer.Data;
 using SecretSantaServer.DTOs;
 using SecretSantaServer.Models;
 using SecretSantaServer.Enums;
+using SecretSantaServer.Hubs;
 
 namespace SecretSantaServer.Services;
 
 public class GameService : IGameService
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly IHubContext<GameHub> _hubContext;
     private const string CharsForCode = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private readonly string _gameStatusUpdateMethod;
+    private readonly string _userJoinMethod;
+    private readonly string _userExitMethod;
 
-    public GameService(ApplicationDbContext dbContext)
+    public GameService(ApplicationDbContext dbContext, IHubContext<GameHub> hubContextContext,
+        IConfiguration configuration)
     {
         _dbContext = dbContext;
+        _hubContext = hubContextContext;
+        _gameStatusUpdateMethod = configuration["Frontend:GameStatusUpdatedMethod"]!;
+        _userJoinMethod = configuration["Frontend:UserJoinMethod"]!;
+        _userExitMethod = configuration["Frontend:UserExitMethod"]!;
     }
 
     public async Task<Result<GameDto>> CreateGame(int adminId, CreateGameRequest request)
@@ -75,6 +88,11 @@ public class GameService : IGameService
         return Result<List<GameDto>>.Success(result);
     }
 
+    public async Task<bool> IsUserInGame(int gameId, int userId)
+    {
+        return await _dbContext.GameMembers.AnyAsync(gm => gm.GameId == gameId && gm.UserId == userId);
+    }
+
     public async Task<Result<GameDto>> GetGameById(int id)
     {
         var game = await _dbContext.Games
@@ -87,6 +105,12 @@ public class GameService : IGameService
             return Result<GameDto>.Failure("Game not found", StatusCodes.Status404NotFound);
 
         return Result<GameDto>.Success(new GameDto(game));
+    }
+
+    public async Task<GameStatus?> GetGameStatusById(int id)
+    {
+        var game = await _dbContext.Games.FirstOrDefaultAsync(x => x.Id == id);
+        return game?.Status;
     }
 
     public async Task<Result<GameDto>> UpdateGame(int gameId, UpdateGameRequest request, int userId)
@@ -132,26 +156,52 @@ public class GameService : IGameService
         if (game.Status != expectedStatus)
             return Result<GameDto>.Failure($"Game status not {expectedStatus}. Current status: {game.Status}",
                 StatusCodes.Status400BadRequest);
-
-        game.Status = newStatus;
-        if (newStatus == GameStatus.Started || newStatus == GameStatus.Cancelled)
+        if (newStatus == GameStatus.Started)
         {
-            game.Code = null;
-            game.ScheduledAt = null;
+            var participants = game.GameMembers.Count;
+            if (!game.IsAdminParticipating)
+                participants--;
+            if (participants < 3)
+                return Result<GameDto>.Failure("Too few players to start", StatusCodes.Status400BadRequest);
         }
 
-        if (newStatus == GameStatus.Started)
-            game.StartedAt = DateTime.UtcNow;
-        if (newStatus == GameStatus.Finished)
-            game.FinishedAt = DateTime.UtcNow;
-        await _dbContext.SaveChangesAsync();
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        try
+        {
+            game.Status = newStatus;
+            if (newStatus == GameStatus.Started || newStatus == GameStatus.Cancelled)
+            {
+                game.Code = null;
+                game.ScheduledAt = null;
+            }
 
-        return Result<GameDto>.Success(new GameDto(game));
+            if (newStatus == GameStatus.Started)
+            {
+                StartGame(game);
+                game.StartedAt = DateTime.UtcNow;
+            }
+
+            if (newStatus == GameStatus.Finished)
+                game.FinishedAt = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
+            await _hubContext.Clients.Group($"game-{gameId}")
+                .SendAsync(_gameStatusUpdateMethod, new EventDto<int>($"game-{newStatus}", gameId));
+
+            await transaction.CommitAsync();
+            return Result<GameDto>.Success(new GameDto(game));
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return Result<GameDto>.Failure(ex.Message, StatusCodes.Status500InternalServerError);
+        }
     }
 
     public async Task<Result<GameDto>> JoinGame(string gameCode, int userId, string? wishLetter)
     {
-        if (await _dbContext.Users.AllAsync(x => x.Id != userId))
+        var user = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == userId);
+        if (user == null)
             return Result<GameDto>.Failure($"User {userId} not found", StatusCodes.Status404NotFound);
 
         var game = await _dbContext.Games.Include(x => x.GameMembers)
@@ -171,6 +221,9 @@ public class GameService : IGameService
         _dbContext.GameMembers.Add(newMember);
         await _dbContext.SaveChangesAsync();
 
+        await _hubContext.Clients.Group($"game-{game.Id}")
+            .SendAsync(_userJoinMethod, new EventDto<UserProfileDto>($"user-joined", new UserProfileDto(user)));
+
         return Result<GameDto>.Success(new GameDto(game));
     }
 
@@ -182,8 +235,8 @@ public class GameService : IGameService
         if (game == null)
             return Result<GameDto>.Failure($"Game {gameId} not found", StatusCodes.Status404NotFound);
 
-        var user = game.GameMembers.FirstOrDefault(m => m.UserId == userId);
-        if (user == null)
+        var gameMember = game.GameMembers.FirstOrDefault(m => m.UserId == userId);
+        if (gameMember == null)
             return Result<GameDto>.Failure($"User {userId} not found in game", StatusCodes.Status404NotFound);
 
         if (userId == game.AdminId)
@@ -193,8 +246,12 @@ public class GameService : IGameService
             return Result<GameDto>.Failure("You can't exit after the game has started.",
                 StatusCodes.Status400BadRequest);
 
-        _dbContext.GameMembers.Remove(user);
+        _dbContext.GameMembers.Remove(gameMember);
         await _dbContext.SaveChangesAsync();
+
+        var user = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == userId);
+        await _hubContext.Clients.Group($"game-{game.Id}")
+            .SendAsync(_userExitMethod, new EventDto<UserProfileDto>($"user-exit", new UserProfileDto(user!)));
 
         return Result<GameDto>.Success(new GameDto(game));
     }
@@ -242,5 +299,46 @@ public class GameService : IGameService
         } while (await _dbContext.Games.AnyAsync(g => g.Code == code));
 
         return code;
+    }
+
+    private void StartGame(Game game)
+    {
+        var members = game.GameMembers.Where(x => x.UserId != game.AdminId || game.IsAdminParticipating)
+            .Select(x=>x.Id).ToList();
+        members.Shuffle();
+        for (var i = 1; i < members.Count; i++)
+        {
+            var assignment = new Assignment()
+            {
+                GameId = game.Id,
+                RecipientId = members[i],
+                SantaId = members[i-1],
+            };
+            _dbContext.Assignments.Add(assignment);
+        }
+
+        var assignment2 = new Assignment()
+        {
+            GameId = game.Id,
+            RecipientId = members[0],
+            SantaId = members[^1],
+        };
+        _dbContext.Assignments.Add(assignment2);
+    }
+}
+
+public static class ShuffleExtension
+{
+    private static Random rng = new Random();
+
+    public static void Shuffle<T>(this IList<T> list)
+    {
+        var n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            var k = rng.Next(n + 1);
+            (list[k], list[n]) = (list[n], list[k]);
+        }
     }
 }

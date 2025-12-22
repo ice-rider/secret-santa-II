@@ -21,6 +21,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpClient<GoogleOAuthClient>();
 builder.Services.AddHttpClient<GithubOAuthClient>();
 
+builder.Services.AddSignalR();
+
 var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
 builder.Services.AddDbContext<IDbContext, ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()

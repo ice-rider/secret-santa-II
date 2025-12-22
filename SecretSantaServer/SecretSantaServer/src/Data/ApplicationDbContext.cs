@@ -69,9 +69,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         });
         modelBuilder.Entity<Assignment>(assignment =>
         {
-            assignment.HasKey(x => x.RecipientId);
-
-            assignment.HasIndex(x => new { x.GameId, x.SantaId }).IsUnique();
+            assignment.HasKey(x => new{x.GameId, x.RecipientId, x.SantaId});
 
             assignment.HasOne(x => x.Recipient)
                 .WithMany()
