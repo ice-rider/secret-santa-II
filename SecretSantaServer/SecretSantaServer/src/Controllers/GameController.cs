@@ -21,23 +21,23 @@ public class GameController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CreateGame([FromBody] CreateGameRequest request)
     {
-        var userId=GetUserId();
+        var userId = GetUserId();
         var result = await _gameService.CreateGame(userId, request);
-        
+
         if (!result.IsSuccess)
-            return StatusCode(result.StatusCode, new{result.Error});
-        
-        return CreatedAtAction(nameof(GetGameById), new{result.Value!.Id}, result.Value);
+            return StatusCode(result.StatusCode, new { result.Error });
+
+        return CreatedAtAction(nameof(GetGameById), new { result.Value!.Id }, result.Value);
     }
-    
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetGameById(int id)
     {
         var result = await _gameService.GetGameById(id);
-        
-        if(!result.IsSuccess)
+
+        if (!result.IsSuccess)
             return StatusCode(result.StatusCode, result.Error);
-        
+
         return Ok(result.Value);
     }
 
@@ -47,23 +47,23 @@ public class GameController : ControllerBase
     {
         var userId = GetUserId();
         var result = await _gameService.UpdateGame(gameId, request, userId);
-        
-        if(!result.IsSuccess)
+
+        if (!result.IsSuccess)
             return StatusCode(result.StatusCode, result.Error);
-        
+
         return Ok(result.Value);
     }
-    
+
     [HttpPost("{gameId}/start")]
     [Authorize]
     public async Task<IActionResult> StartGame(int gameId)
     {
-        var userId=GetUserId();
-        var result = await _gameService.ChangeStatusGame(gameId,userId,GameStatus.Created,GameStatus.Started);
-        
+        var userId = GetUserId();
+        var result = await _gameService.ChangeStatusGame(gameId, userId, GameStatus.Created, GameStatus.Started);
+
         if (!result.IsSuccess)
-            return StatusCode(result.StatusCode, new{result.Error});
-        
+            return StatusCode(result.StatusCode, new { result.Error });
+
         return Ok(result.Value);
     }
 
@@ -71,31 +71,65 @@ public class GameController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CancelGame(int gameId)
     {
-        var userId=GetUserId();
-        var result = await _gameService.ChangeStatusGame(gameId, userId,GameStatus.Created,GameStatus.Cancelled);
-        
-        if(!result.IsSuccess)
+        var userId = GetUserId();
+        var result = await _gameService.ChangeStatusGame(gameId, userId, GameStatus.Created, GameStatus.Cancelled);
+
+        if (!result.IsSuccess)
             return StatusCode(result.StatusCode, result.Error);
-        
+
         return Ok(result.Value);
     }
-    
+
     [HttpPost("{gameId}/finish")]
     [Authorize]
     public async Task<IActionResult> FinishGame(int gameId)
     {
-        var userId=GetUserId();
-        var result = await _gameService.ChangeStatusGame(gameId, userId,GameStatus.Started,GameStatus.Finished);
-        
-        if(!result.IsSuccess)
+        var userId = GetUserId();
+        var result = await _gameService.ChangeStatusGame(gameId, userId, GameStatus.Started, GameStatus.Finished);
+
+        if (!result.IsSuccess)
             return StatusCode(result.StatusCode, result.Error);
-        
+
         return Ok(result.Value);
     }
-    
+
+    [HttpPost("{gameCode}/join")]
+    public async Task<IActionResult> JoinGame(string gameCode)
+    {
+        var userId = GetUserId();
+        var result = await _gameService.JoinGame(gameCode, userId);
+        if (!result.IsSuccess)
+            return StatusCode(result.StatusCode, result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("{gameId}/exit")]
+    public async Task<IActionResult> ExitGame(int gameId)
+    {
+        var userId = GetUserId();
+        var result = await _gameService.ExitGame(gameId, userId);
+        if (!result.IsSuccess)
+            return StatusCode(result.StatusCode, result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpDelete("{gameId}/members/{memberId}")]
+    [Authorize]
+    public async Task<IActionResult> RemoveMember(int gameId, int memberId)
+    {
+        var userId = GetUserId();
+        var result = await _gameService.RemoveMember(gameId, memberId, userId);
+        if (!result.IsSuccess)
+            return StatusCode(result.StatusCode, result.Error);
+
+        return Ok(result.Value);
+    }
+
     private int GetUserId()
     {
-        var userId=int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         return userId;
     }
 }
