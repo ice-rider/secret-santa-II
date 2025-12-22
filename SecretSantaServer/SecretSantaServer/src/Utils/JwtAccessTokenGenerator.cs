@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using SecretSantaServer.Enums;
 
@@ -15,7 +16,7 @@ public class JwtAccessTokenGenerator : IAccessTokenGenerator
     {
         _issuer = config["Jwt:Issuer"];
         _audience = config["Jwt:Audience"];
-        _key = new SymmetricSecurityKey(Convert.FromBase64String(config["Jwt:Key"]));
+        _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
     }
     
     public string GenerateJwtToken(string userId, Role role)

@@ -139,12 +139,6 @@ namespace SecretSantaServer.Migrations
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_games_admin_id",
-                table: "games",
-                column: "admin_id",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "ix_games_code",
                 table: "games",
                 column: "code",

@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -12,15 +13,15 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<IAccessTokenGenerator, JwtAccessTokenGenerator>();
-builder.Services.AddScoped<IAuthService,AuthService>();
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<IOAuthService,OAuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IOAuthService, OAuthService>();
 builder.Services.AddHttpClient<GoogleOAuthClient>();
 builder.Services.AddHttpClient<GithubOAuthClient>();
-builder.Services.AddScoped<IAuthService,AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
-builder.Services.AddDbContext<IDbContext,ApplicationDbContext>(options =>
+builder.Services.AddDbContext<IDbContext, ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
 );
 
@@ -50,7 +51,7 @@ builder.Services.AddAuthentication(options =>
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Convert.FromBase64String(builder.Configuration["Jwt:Key"]))
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
 builder.Services.AddAuthorization();

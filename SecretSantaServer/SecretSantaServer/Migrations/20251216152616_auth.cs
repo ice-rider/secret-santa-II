@@ -1,11 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace SecretSantaServer.Migrations
 {
     /// <inheritdoc />
-    public partial class user_credentials_added : Migration
+    public partial class auth : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -47,6 +49,22 @@ namespace SecretSantaServer.Migrations
                 table: "users");
 
             migrationBuilder.CreateTable(
+                name: "refresh_tokens",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    token = table.Column<string>(type: "text", nullable: false),
+                    user_id = table.Column<int>(type: "integer", nullable: false),
+                    expires_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_refresh_tokens", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "user_auth_data",
                 columns: table => new
                 {
@@ -67,6 +85,12 @@ namespace SecretSantaServer.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_refresh_tokens_token",
+                table: "refresh_tokens",
+                column: "token",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_user_auth_data_email",
@@ -96,6 +120,9 @@ namespace SecretSantaServer.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "refresh_tokens");
+
             migrationBuilder.DropTable(
                 name: "user_auth_data");
 

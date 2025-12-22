@@ -101,5 +101,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithOne(x => x.Credential)
                 .HasForeignKey<UserCredentials>(x => x.UserId);
         });
+        modelBuilder.Entity<RefreshToken>(refreshToken =>
+        {
+            refreshToken.HasKey(x => x.Id);
+            
+            refreshToken.HasIndex(x=>x.Token).IsUnique();
+        });
     }
 }

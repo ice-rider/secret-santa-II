@@ -63,7 +63,6 @@ namespace SecretSantaServer.Migrations
                         .HasColumnName("admin_id");
 
                     b.Property<string>("Code")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("code");
 
@@ -141,6 +140,42 @@ namespace SecretSantaServer.Migrations
                         .HasDatabaseName("ix_game_members_game_id_user_id");
 
                     b.ToTable("game_members", (string)null);
+                });
+
+            modelBuilder.Entity("SecretSantaServer.Models.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("token");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_refresh_tokens");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("ix_refresh_tokens_token");
+
+                    b.ToTable("refresh_tokens", (string)null);
                 });
 
             modelBuilder.Entity("SecretSantaServer.Models.User", b =>
