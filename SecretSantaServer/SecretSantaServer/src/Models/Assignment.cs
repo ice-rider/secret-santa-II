@@ -6,11 +6,11 @@ namespace SecretSantaServer.Models;
 public class Assignment
 {
     public int GameId { get; init; }
-    public required Game Game { get; init; }
+    public Game Game { get; init; }
     
     public int RecipientId { get; init; }
-    public required GameMember Recipient { get; init; }
+    public GameMember Recipient { get; init; }
     
-    public int? SantaId { get; set; }
-    public GameMember? Santa { get; set; }
+    public int SantaId { get; init; }
+    public GameMember Santa { get; init; }
 }

@@ -149,7 +149,7 @@ public class GameService : IGameService
         return Result<GameDto>.Success(new GameDto(game));
     }
 
-    public async Task<Result<GameDto>> JoinGame(string gameCode, int userId)
+    public async Task<Result<GameDto>> JoinGame(string gameCode, int userId, string? wishLetter)
     {
         if (await _dbContext.Users.AllAsync(x => x.Id != userId))
             return Result<GameDto>.Failure($"User {userId} not found", StatusCodes.Status404NotFound);
@@ -165,7 +165,8 @@ public class GameService : IGameService
         var newMember = new GameMember
         {
             GameId = game.Id,
-            UserId = userId
+            UserId = userId,
+            Letter = wishLetter,
         };
         _dbContext.GameMembers.Add(newMember);
         await _dbContext.SaveChangesAsync();
