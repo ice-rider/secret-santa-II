@@ -45,6 +45,7 @@ http-client.env.json
 
 # MSBuild Binary and Structured Log
 *.binlog
+QWEN.md
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
