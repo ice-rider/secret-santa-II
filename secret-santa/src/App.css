@@ -1,5 +1,6 @@
 @import url('./auth/auth.css');
 @import url('./pages/pages.css');
+@import url('./game/game.css');
 
 body {
   margin: 0;
