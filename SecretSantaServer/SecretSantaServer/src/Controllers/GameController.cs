@@ -122,13 +122,26 @@ public class GameController : ControllerBase
         return Ok(result.Value);
     }
     
-    [HttpGet("{gameId}/members/{userId}/wish")]
+    [HttpGet("{gameId}/my-wish")]
     [Authorize]
-    public async Task<IActionResult> GetWishLetter(int gameId, int userId, WishLetterDto wishLetter)
+    public async Task<IActionResult> GetMyWishLetter(int gameId)
     {
-        var requesterId = GetUserId();
+        var userId = GetUserId();
         
-        var result = await _assignmentService.GetWishLetter(gameId, userId, requesterId);
+        var result = await _assignmentService.GetMyWishLetter(gameId, userId);
+        if (!result.IsSuccess)
+            return StatusCode(result.StatusCode, result.Error);
+
+        return Ok(result.Value);
+    }
+    
+    [HttpGet("{gameId}/participant/wish")]
+    [Authorize]
+    public async Task<IActionResult> GetParticipantWishLetter(int gameId)
+    {
+        var userId = GetUserId();
+        
+        var result = await _assignmentService.GetParticipantWishLetter(gameId, userId);
         if (!result.IsSuccess)
             return StatusCode(result.StatusCode, result.Error);
 

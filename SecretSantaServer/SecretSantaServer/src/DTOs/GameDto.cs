@@ -12,6 +12,7 @@ public class GameDto
 
     public int AdminId { get; set; }
     public IEnumerable<UserProfileDto> Members { get; set; }
+    public bool IsAdminParticipating { get; set; }
 
     public GameStatus Status { get; set; } = GameStatus.Created;
     public DateTime? StartsAt { get; set; }
@@ -26,12 +27,13 @@ public class GameDto
         Code = game.Code;
         AdminId = game.AdminId;
         Status = game.Status;
+        IsAdminParticipating = game.IsAdminParticipating;
         StartsAt = game.ScheduledAt;
         StartedAt = game.StartedAt;
         FinishedAt = game.FinishedAt;
         if (game.GameMembers == null || game.GameMembers.Count == 0)
             Members = null;
-        else if(game.GameMembers.ToList()[0].User!=null)
+        else if (game.GameMembers.ToList()[0].User != null)
             Members = game.GameMembers.Select(x => new UserProfileDto(x.User)).ToList();
     }
 }
