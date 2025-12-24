@@ -10,6 +10,8 @@ const RegisterPage = lazy(() => import('./pages/Register'));
 const DashboardPage = lazy(() => import('./pages/Dashboard'));
 const ProfilePage = lazy(() => import('./pages/Profile'));
 const OAuthCallbackPage = lazy(() => import('./auth/OAuthCallback'));
+const GamesListPage = lazy(() => import('./game/GamesListPage'));
+const GameDetailsPage = lazy(() => import('./game/GameDetailsPage'));
 
 const AppRoutes = () => {
   return (
@@ -28,6 +30,16 @@ const AppRoutes = () => {
       <Route path="/profile" component={() => (
         <ProtectedRoute>
           <ProfilePage />
+        </ProtectedRoute>
+      )} />
+      <Route path="/games" component={() => (
+        <ProtectedRoute>
+          <GamesListPage />
+        </ProtectedRoute>
+      )} />
+      <Route path="/games/:id" component={() => (
+        <ProtectedRoute>
+          <GameDetailsPage />
         </ProtectedRoute>
       )} />
     </Router>
