@@ -1,7 +1,9 @@
-import { createSignal, onMount } from 'solid-js';
+import { createSignal, onMount, onCleanup } from 'solid-js';
 import { useParams } from '@solidjs/router';
 import type { Game } from '../types';
 import gamesService from '../services/games.service';
+import sseService from '../services/sse.service';
+import type { SseEvent } from '../services/sse.service';
 import { useAuth } from '../AuthProvider';
 import ParticipantsList from './ParticipantsList';
 import WishEditor from './WishEditor';
@@ -30,12 +32,32 @@ const GameDetailsPage = () => {
       // Generate invite link
       const link = `${window.location.origin}/games/${gameId}`;
       setInviteLink(link);
+
+      // Connect to SSE for real-time updates
+      sseService.connect(gameId);
+
+      // Subscribe to game events
+      sseService.subscribe('participant-joined', handleParticipantJoined);
+      sseService.subscribe('participant-left', handleParticipantLeft);
+      sseService.subscribe('game-started', handleGameStarted);
+      sseService.subscribe('game-revealed', handleGameRevealed);
     } catch (err) {
       setError('Failed to load game details');
       console.error('Error loading game details:', err);
     } finally {
       setLoading(false);
     }
+  });
+
+  // Clean up SSE connection on component unmount
+  onCleanup(() => {
+    sseService.disconnect();
+
+    // Unsubscribe from events
+    sseService.unsubscribe('participant-joined', handleParticipantJoined);
+    sseService.unsubscribe('participant-left', handleParticipantLeft);
+    sseService.unsubscribe('game-started', handleGameStarted);
+    sseService.unsubscribe('game-revealed', handleGameRevealed);
   });
 
   const joinGame = async () => {
@@ -122,6 +144,69 @@ const GameDetailsPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // SSE event handlers
+  const handleParticipantJoined = (event: SseEvent) => {
+    // Update game data when a participant joins
+    if (event.gameId === params.id) {
+      // Show notification
+      showNotification(`${event.data.participantName} joined the game!`);
+
+      // Refresh game data to update participant count
+      refreshGameData();
+    }
+  };
+
+  const handleParticipantLeft = (event: SseEvent) => {
+    // Update game data when a participant leaves
+    if (event.gameId === params.id) {
+      // Show notification
+      showNotification(`${event.data.participantName} left the game.`);
+
+      // Refresh game data to update participant count
+      refreshGameData();
+    }
+  };
+
+  const handleGameStarted = (event: SseEvent) => {
+    // Update game status when game starts
+    if (event.gameId === params.id) {
+      // Show notification
+      showNotification('The game has started! Check your assignment.');
+
+      // Refresh game data to update status
+      refreshGameData();
+    }
+  };
+
+  const handleGameRevealed = (event: SseEvent) => {
+    // Handle game reveal event
+    if (event.gameId === params.id) {
+      // Show notification
+      showNotification('Secret assignments have been revealed!');
+
+      // Refresh game data to update status
+      refreshGameData();
+    }
+  };
+
+  const refreshGameData = async () => {
+    try {
+      const gameId = params.id;
+      if (!gameId) return;
+
+      const updatedGame = await gamesService.getGameById(gameId);
+      setGame(updatedGame);
+    } catch (err) {
+      console.error('Error refreshing game data:', err);
+    }
+  };
+
+  const showNotification = (message: string) => {
+    // Simple notification implementation
+    // In a real app, you might use a more sophisticated notification system
+    alert(message);
   };
 
   if (loading()) {
