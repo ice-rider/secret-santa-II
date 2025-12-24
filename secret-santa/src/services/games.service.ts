@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URL } from './api';
-import type { CreateGameRequest, Game, GameFilter } from '../types';
+import type { CreateGameRequest, Game, GameFilter, UpdateGameRequest } from '../types';
 
 class GamesService {
   private baseUrl: string;
@@ -30,7 +30,7 @@ class GamesService {
     return response.data;
   }
 
-  async updateGame(id: string, gameData: Partial<CreateGameRequest>): Promise<Game> {
+  async updateGame(id: string, gameData: Partial<CreateGameRequest> | Partial<UpdateGameRequest>): Promise<Game> {
     const response = await axios.put(`${this.baseUrl}/${id}`, gameData);
     return response.data;
   }

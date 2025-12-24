@@ -33,6 +33,13 @@ export interface TelegramAuthData {
 }
 
 // Game-related types
+export interface Participant {
+  id: string;
+  name: string;
+  email: string;
+  isCreator?: boolean;
+}
+
 export interface Game {
   id: string;
   name: string;
@@ -48,6 +55,7 @@ export interface Game {
   updatedAt: string;
   isParticipant: boolean;
   isCreator: boolean;
+  participants?: Participant[];
 }
 
 export interface CreateGameRequest {
@@ -56,6 +64,15 @@ export interface CreateGameRequest {
   participantLimit: number;
   startDate?: string;
   endDate?: string;
+}
+
+export interface UpdateGameRequest {
+  name?: string;
+  description?: string;
+  participantLimit?: number;
+  startDate?: string;
+  endDate?: string;
+  status?: 'draft' | 'active' | 'completed' | 'cancelled';
 }
 
 export interface GameFilter {
