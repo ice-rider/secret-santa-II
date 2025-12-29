@@ -1,6 +1,7 @@
-import { createSignal, onMount } from 'solid-js';
+import { createSignal } from 'solid-js';
 import authService from '../services/auth.service';
-import authStore from '../stores/auth.store';
+import authStore from '../stores/auth.store'
+import { Button } from '../components/ui/Button';
 
 interface OAuthButtonsProps {
   onOAuthSuccess?: () => void;
@@ -14,10 +15,10 @@ const OAuthButtons = (props: OAuthButtonsProps) => {
   const handleGoogleAuth = async () => {
     setGoogleLoading(true);
     setError('');
-    
+
     try {
       const authUrl = await authService.googleAuthUrl();
-      
+
       // Open OAuth popup
       openOAuthPopup(authUrl, 'google');
     } catch (err) {
@@ -31,10 +32,10 @@ const OAuthButtons = (props: OAuthButtonsProps) => {
   const handleGitHubAuth = async () => {
     setGithubLoading(true);
     setError('');
-    
+
     try {
       const authUrl = await authService.githubAuthUrl();
-      
+
       // Open OAuth popup
       openOAuthPopup(authUrl, 'github');
     } catch (err) {
@@ -64,9 +65,8 @@ const OAuthButtons = (props: OAuthButtonsProps) => {
     }
   };
 
-  onMount(() => {
-    window.addEventListener('message', handleMessage);
-  });
+  // Set up message listener
+  window.addEventListener('message', handleMessage);
 
   const openOAuthPopup = (url: string, provider: string) => {
     // Calculate popup window position and size
@@ -103,17 +103,28 @@ const OAuthButtons = (props: OAuthButtonsProps) => {
   };
 
   return (
-    <div class="oauth-buttons">
+    <div style={{ display: 'flex', 'flex-direction': 'column', gap: '12px' }}>
       {error() && (
-        <div class="error-message">
+        <div style={{ color: 'red', 'text-align': 'center', 'margin-bottom': '12px' }}>
           {error()}
         </div>
       )}
-      
-      <button
+
+      <Button
         onClick={handleGoogleAuth}
         disabled={googleLoading()}
-        class="oauth-button google"
+        style={{
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          gap: '8px',
+          'background-color': '#fff',
+          border: '1px solid #ddd',
+          color: '#555',
+          'padding': '10px',
+          'border-radius': '4px',
+          cursor: 'pointer'
+        }}
       >
         {googleLoading() ? 'Loading...' : (
           <>
@@ -126,12 +137,23 @@ const OAuthButtons = (props: OAuthButtonsProps) => {
             <span>Continue with Google</span>
           </>
         )}
-      </button>
-      
-      <button
+      </Button>
+
+      <Button
         onClick={handleGitHubAuth}
         disabled={githubLoading()}
-        class="oauth-button github"
+        style={{
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          gap: '8px',
+          'background-color': '#fff',
+          border: '1px solid #ddd',
+          color: '#333',
+          'padding': '10px',
+          'border-radius': '4px',
+          cursor: 'pointer'
+        }}
       >
         {githubLoading() ? 'Loading...' : (
           <>
@@ -141,7 +163,7 @@ const OAuthButtons = (props: OAuthButtonsProps) => {
             <span>Continue with GitHub</span>
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 };

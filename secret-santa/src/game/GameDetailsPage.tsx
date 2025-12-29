@@ -1,5 +1,5 @@
 import { createSignal, onMount, onCleanup } from 'solid-js';
-import { useParams } from '@solidjs/router';
+import { A, useParams } from '@solidjs/router';
 import type { Game } from '../types';
 import gamesService from '../services/games.service';
 import sseService from '../services/sse.service';
@@ -8,6 +8,11 @@ import { useAuth } from '../AuthProvider';
 import ParticipantsList from './ParticipantsList';
 import WishEditor from './WishEditor';
 import AssignmentReveal from './AssignmentReveal';
+import Notification from '../components/ui/Notification';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Box, Container, Typography, Chip, Grid } from '@suid/material';
 
 const GameDetailsPage = () => {
   const params = useParams();
@@ -16,6 +21,7 @@ const GameDetailsPage = () => {
   const [loading, setLoading] = createSignal(true);
   const [error, setError] = createSignal('');
   const [inviteLink, setInviteLink] = createSignal('');
+  const [notification, setNotification] = createSignal<{message: string, type: 'success' | 'error' | 'warning' | 'info'} | null>(null);
 
   onMount(async () => {
     try {
@@ -67,8 +73,10 @@ const GameDetailsPage = () => {
       setLoading(true);
       const updatedGame = await gamesService.joinGame(game()!.id);
       setGame(updatedGame);
-    } catch (err) {
+      setNotification({message: 'Successfully joined the game!', type: 'success'});
+    } catch (err: any) {
       setError('Failed to join game');
+      setNotification({message: err.response?.data?.message || 'Failed to join game', type: 'error'});
       console.error('Error joining game:', err);
     } finally {
       setLoading(false);
@@ -82,8 +90,10 @@ const GameDetailsPage = () => {
       setLoading(true);
       const updatedGame = await gamesService.leaveGame(game()!.id);
       setGame(updatedGame);
-    } catch (err) {
+      setNotification({message: 'Successfully left the game', type: 'success'});
+    } catch (err: any) {
       setError('Failed to leave game');
+      setNotification({message: err.response?.data?.message || 'Failed to leave game', type: 'error'});
       console.error('Error leaving game:', err);
     } finally {
       setLoading(false);
@@ -100,8 +110,10 @@ const GameDetailsPage = () => {
         status: 'active'
       });
       setGame(updatedGame);
-    } catch (err) {
+      setNotification({message: 'Game started successfully!', type: 'success'});
+    } catch (err: any) {
       setError('Failed to start game');
+      setNotification({message: err.response?.data?.message || 'Failed to start game', type: 'error'});
       console.error('Error starting game:', err);
     } finally {
       setLoading(false);
@@ -112,18 +124,11 @@ const GameDetailsPage = () => {
     if (inviteLink()) {
       navigator.clipboard.writeText(inviteLink())
         .then(() => {
-          // Show success feedback
-          const button = document.getElementById('copy-link-btn');
-          if (button) {
-            const originalText = button.textContent;
-            button.textContent = 'Copied!';
-            setTimeout(() => {
-              if (button) button.textContent = originalText;
-            }, 2000);
-          }
+          setNotification({message: 'Link copied to clipboard!', type: 'success'});
         })
         .catch(err => {
           setError('Failed to copy link');
+          setNotification({message: 'Failed to copy link', type: 'error'});
           console.error('Error copying link:', err);
         });
     }
@@ -138,8 +143,10 @@ const GameDetailsPage = () => {
       // For now, we'll just refresh the game data
       const updatedGame = await gamesService.getGameById(game()!.id);
       setGame(updatedGame);
-    } catch (err) {
+      setNotification({message: 'Participant removed successfully', type: 'success'});
+    } catch (err: any) {
       setError('Failed to remove participant');
+      setNotification({message: err.response?.data?.message || 'Failed to remove participant', type: 'error'});
       console.error('Error removing participant:', err);
     } finally {
       setLoading(false);
@@ -151,7 +158,7 @@ const GameDetailsPage = () => {
     // Update game data when a participant joins
     if (event.gameId === params.id) {
       // Show notification
-      showNotification(`${event.data.participantName} joined the game!`);
+      setNotification({message: `${event.data.participantName} joined the game!`, type: 'info'});
 
       // Refresh game data to update participant count
       refreshGameData();
@@ -162,7 +169,7 @@ const GameDetailsPage = () => {
     // Update game data when a participant leaves
     if (event.gameId === params.id) {
       // Show notification
-      showNotification(`${event.data.participantName} left the game.`);
+      setNotification({message: `${event.data.participantName} left the game.`, type: 'info'});
 
       // Refresh game data to update participant count
       refreshGameData();
@@ -173,7 +180,7 @@ const GameDetailsPage = () => {
     // Update game status when game starts
     if (event.gameId === params.id) {
       // Show notification
-      showNotification('The game has started! Check your assignment.');
+      setNotification({message: 'The game has started! Check your assignment.', type: 'success'});
 
       // Refresh game data to update status
       refreshGameData();
@@ -184,7 +191,7 @@ const GameDetailsPage = () => {
     // Handle game reveal event
     if (event.gameId === params.id) {
       // Show notification
-      showNotification('Secret assignments have been revealed!');
+      setNotification({message: 'Secret assignments have been revealed!', type: 'success'});
 
       // Refresh game data to update status
       refreshGameData();
@@ -203,48 +210,58 @@ const GameDetailsPage = () => {
     }
   };
 
-  const showNotification = (message: string) => {
-    // Simple notification implementation
-    // In a real app, you might use a more sophisticated notification system
-    alert(message);
-  };
-
   if (loading()) {
-    return <div class="loading">Loading game details...</div>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <Typography>Loading game details...</Typography>
+      </Box>
+    );
   }
 
   if (error()) {
     return (
-      <div class="error-message">
-        {error()}
-        <a href="/games">Back to Games</a>
-      </div>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Card>
+          <Box sx={{ p: 4 }}>
+            <Typography color="error" mb={2}>{error()}</Typography>
+            <A href="/games" style={{ "text-decoration": 'none' }}>
+              <Button variant="outlined">Back to Games</Button>
+            </A>
+          </Box>
+        </Card>
+      </Container>
     );
   }
 
   const currentGame = game();
   if (!currentGame) {
     return (
-      <div class="error-message">
-        Game not found
-        <a href="/games">Back to Games</a>
-      </div>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Card>
+          <Box sx={{ p: 4 }}>
+            <Typography color="error" mb={2}>Game not found</Typography>
+            <A href="/games" style={{ "text-decoration": 'none' }}>
+              <Button variant="outlined">Back to Games</Button>
+            </A>
+          </Box>
+        </Card>
+      </Container>
     );
   }
 
-  // Function to get status badge class based on game status
-  const getStatusClass = (status: string) => {
+  // Function to get status color based on game status
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'draft':
-        return 'status-draft';
+        return 'default';
       case 'active':
-        return 'status-active';
+        return 'primary';
       case 'completed':
-        return 'status-completed';
+        return 'success';
       case 'cancelled':
-        return 'status-cancelled';
+        return 'error';
       default:
-        return 'status-unknown';
+        return 'default';
     }
   };
 
@@ -255,154 +272,205 @@ const GameDetailsPage = () => {
   };
 
   return (
-    <div class="game-details-page">
-      <header class="game-details-header">
-        <a href="/games" class="back-link">&larr; Back to Games</a>
-        <div class="game-header-content">
-          <h1>{currentGame.name}</h1>
-          <span class={`status-badge ${getStatusClass(currentGame.status)}`}>
-            {currentGame.status.charAt(0).toUpperCase() + currentGame.status.slice(1)}
-          </span>
-        </div>
-      </header>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ mb: 4 }}>
+        <A href="/games" style={{ "text-decoration": 'none', color: 'inherit' }}>
+          <Typography variant="body2" color="textSecondary" mb={2}>&larr; Back to Games</Typography>
+        </A>
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h4" component="h1">{currentGame.name}</Typography>
+          <Chip
+            label={currentGame.status.charAt(0).toUpperCase() + currentGame.status.slice(1)}
+            color={getStatusColor(currentGame.status) as any}
+            variant="outlined"
+          />
+        </Box>
+      </Box>
 
       {error() && (
-        <div class="error-message">
-          {error()}
-        </div>
+        <Box sx={{ mb: 3 }}>
+          <Typography color="error">{error()}</Typography>
+        </Box>
       )}
 
-      <main class="game-details-main">
+      <Grid container spacing={4}>
         {/* Game Info Section */}
-        <section class="game-info">
-          <div class="game-basic-info">
-            {currentGame.description && (
-              <div class="game-description">
-                <h3>Description</h3>
-                <p>{currentGame.description}</p>
-              </div>
-            )}
-
-            <div class="game-stats">
-              <div class="stat-card">
-                <h4>Participants</h4>
-                <p>{currentGame.participantCount} / {currentGame.participantLimit}</p>
-              </div>
-
-              <div class="stat-card">
-                <h4>Creator</h4>
-                <p>{currentGame.creatorName}</p>
-              </div>
-
-              {currentGame.startDate && (
-                <div class="stat-card">
-                  <h4>Start Date</h4>
-                  <p>{formatDate(currentGame.startDate)}</p>
-                </div>
+        <Grid item xs={12} md={8}>
+          <Card>
+            <Box sx={{ p: 3 }}>
+              {currentGame.description && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" mb={1}>Description</Typography>
+                  <Typography variant="body1" color="textSecondary">
+                    {currentGame.description}
+                  </Typography>
+                </Box>
               )}
 
-              {currentGame.endDate && (
-                <div class="stat-card">
-                  <h4>End Date</h4>
-                  <p>{formatDate(currentGame.endDate)}</p>
-                </div>
+              <Grid container spacing={2}>
+                <Grid item xs={6} md={3}>
+                  <Box sx={{ textAlign: 'center', p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                    <Typography variant="h6">{currentGame.participantCount} / {currentGame.participantLimit}</Typography>
+                    <Typography variant="caption" color="textSecondary">Participants</Typography>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={6} md={3}>
+                  <Box sx={{ textAlign: 'center', p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                    <Typography variant="h6">{currentGame.creatorName}</Typography>
+                    <Typography variant="caption" color="textSecondary">Creator</Typography>
+                  </Box>
+                </Grid>
+
+                {currentGame.startDate && (
+                  <Grid item xs={6} md={3}>
+                    <Box sx={{ textAlign: 'center', p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                      <Typography variant="h6">{formatDate(currentGame.startDate)}</Typography>
+                      <Typography variant="caption" color="textSecondary">Start Date</Typography>
+                    </Box>
+                  </Grid>
+                )}
+
+                {currentGame.endDate && (
+                  <Grid item xs={6} md={3}>
+                    <Box sx={{ textAlign: 'center', p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                      <Typography variant="h6">{formatDate(currentGame.endDate)}</Typography>
+                      <Typography variant="caption" color="textSecondary">End Date</Typography>
+                    </Box>
+                  </Grid>
+                )}
+              </Grid>
+            </Box>
+          </Card>
+        </Grid>
+
+        {/* Game Actions Section */}
+        <Grid item xs={12} md={4}>
+          <Card>
+            <Box sx={{ p: 3 }}>
+              <Typography variant="h6" mb={2}>Actions</Typography>
+
+              {user && currentGame.isCreator ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {currentGame.status === 'draft' && currentGame.participantCount >= 3 && (
+                    <Button
+                      variant="contained"
+                      onClick={startGame}
+                      disabled={loading()}
+                      fullWidth
+                    >
+                      {loading() ? 'Starting...' : 'Start Game'}
+                    </Button>
+                  )}
+                  <Typography variant="body2" color="textSecondary" textAlign="center">
+                    You are the creator of this game
+                  </Typography>
+                </Box>
+              ) : user && currentGame.isParticipant ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={leaveGame}
+                    disabled={loading()}
+                    fullWidth
+                  >
+                    {loading() ? 'Leaving...' : 'Leave Game'}
+                  </Button>
+                </Box>
+              ) : user ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={joinGame}
+                    disabled={loading()}
+                    fullWidth
+                  >
+                    {loading() ? 'Joining...' : 'Join Game'}
+                  </Button>
+                </Box>
+              ) : (
+                <Box>
+                  <Typography variant="body1" textAlign="center" mb={2}>
+                    Please log in to join this game
+                  </Typography>
+                  <A href="/login" style={{ "text-decoration": 'none' }}>
+                    <Button variant="contained" fullWidth>
+                      Log In
+                    </Button>
+                  </A>
+                </Box>
               )}
-            </div>
-          </div>
-        </section>
+            </Box>
+          </Card>
+        </Grid>
 
         {/* Invite Link Section */}
-        <section class="invite-section">
-          <h3>Invite Others</h3>
-          <div class="invite-link-container">
-            <input
-              type="text"
-              value={inviteLink()}
-              readonly
-              class="invite-link"
-            />
-            <button
-              id="copy-link-btn"
-              class="copy-link-btn"
-              onClick={copyInviteLink}
-            >
-              Copy Link
-            </button>
-          </div>
-        </section>
+        <Grid item xs={12}>
+          <Card>
+            <Box sx={{ p: 3 }}>
+              <Typography variant="h6" mb={2}>Invite Others</Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Input
+                  value={inviteLink()}
+                  readonly
+                  fullWidth
+                  disabled
+                />
+                <Button
+                  id="copy-link-btn"
+                  onClick={copyInviteLink}
+                  variant="outlined"
+                >
+                  Copy Link
+                </Button>
+              </Box>
+            </Box>
+          </Card>
+        </Grid>
 
         {/* Participants List */}
-        <section class="participants-section">
-          <h3>Participants ({currentGame.participantCount})</h3>
-          <ParticipantsList
-            participants={currentGame.participants || []}
-            isCreator={currentGame.isCreator}
-            onRemoveParticipant={removeParticipant}
-          />
-        </section>
+        <Grid item xs={12}>
+          <Card>
+            <Box sx={{ p: 3 }}>
+              <Typography variant="h6" mb={2}>Participants ({currentGame.participantCount})</Typography>
+              <ParticipantsList
+                participants={currentGame.participants || []}
+                isCreator={currentGame.isCreator}
+                onRemoveParticipant={removeParticipant}
+              />
+            </Box>
+          </Card>
+        </Grid>
 
         {/* Wish Editor - only for participants in active games */}
         {(user && currentGame.isParticipant && currentGame.status === 'active') && (
-          <section class="wish-editor-section">
-            <h3>Your Wish List</h3>
+          <Grid item xs={12}>
             <WishEditor gameId={currentGame.id} />
-          </section>
+          </Grid>
         )}
 
         {/* Assignment Reveal - only after game starts */}
         {currentGame.status === 'active' && (
-          <section class="assignment-section">
-            <h3>Your Assignment</h3>
-            <AssignmentReveal gameId={currentGame.id} />
-          </section>
+          <Grid item xs={12}>
+            <AssignmentReveal
+              gameId={currentGame.id}
+              isGameStarted={currentGame.status === 'active'}
+            />
+          </Grid>
         )}
+      </Grid>
 
-        {/* Game Actions */}
-        <section class="game-actions">
-          {user && currentGame.isCreator ? (
-            <div class="creator-actions">
-              {currentGame.status === 'draft' && currentGame.participantCount >= 3 && (
-                <button
-                  class="start-game-btn"
-                  onClick={startGame}
-                  disabled={loading()}
-                >
-                  {loading() ? 'Starting...' : 'Start Game'}
-                </button>
-              )}
-              <div class="action-info">
-                <p>You are the creator of this game</p>
-              </div>
-            </div>
-          ) : user && currentGame.isParticipant ? (
-            <div class="participant-actions">
-              <button
-                class="leave-game-btn"
-                onClick={leaveGame}
-                disabled={loading()}
-              >
-                {loading() ? 'Leaving...' : 'Leave Game'}
-              </button>
-            </div>
-          ) : user ? (
-            <div class="join-actions">
-              <button
-                class="join-game-btn"
-                onClick={joinGame}
-                disabled={loading()}
-              >
-                {loading() ? 'Joining...' : 'Join Game'}
-              </button>
-            </div>
-          ) : (
-            <div class="login-prompt">
-              <p>Please log in to join this game</p>
-              <a href="/login" class="login-link">Log In</a>
-            </div>
-          )}
-        </section>
-      </main>
-    </div>
+      {/* Notification */}
+      {notification() && (
+        <Notification
+          message={notification()!.message}
+          type={notification()!.type}
+          duration={4000}
+        />
+      )}
+    </Container>
   );
 };
 

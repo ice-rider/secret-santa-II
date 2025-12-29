@@ -1,4 +1,4 @@
-import { createContext, createEffect, useContext, JSX } from 'solid-js';
+import { createContext, createEffect, useContext } from 'solid-js';
 import authStore from './stores/auth.store';
 import type { AuthState } from './stores/auth.store';
 
@@ -15,7 +15,7 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // AuthProvider component
-export const AuthProvider = (props: { children?: JSX.Element }) => {
+export const AuthProvider = (props: { children?: import('solid-js').JSX.Element }) => {
   // Initialize auth state when the app loads
   createEffect(() => {
     authStore.initializeAuth();

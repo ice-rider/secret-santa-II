@@ -1,112 +1,71 @@
-import { createSignal, onMount } from 'solid-js';
+import { createSignal } from 'solid-js';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Box, Typography } from '@suid/material';
 
 interface AssignmentRevealProps {
   gameId: string;
+  isGameStarted: boolean;
 }
 
-interface Assignment {
-  id: string;
-  name: string;
-  email: string;
-  wishList?: string;
-}
-
-const AssignmentReveal = (_props: AssignmentRevealProps) => {
-  const [assignment, setAssignment] = createSignal<Assignment | null>(null);
-  const [loading, setLoading] = createSignal(true);
-  const [error, setError] = createSignal('');
+const AssignmentReveal = (props: AssignmentRevealProps) => {
+  const [assignment, setAssignment] = createSignal('');
+  const [loading, setLoading] = createSignal(false);
   const [revealed, setRevealed] = createSignal(false);
 
-  onMount(async () => {
-    try {
-      setLoading(true);
-      setError('');
-      // In a real implementation, we would fetch the assignment for the current user in this game
-      // For now, we'll just initialize with null and let the user reveal it
-    } catch (err) {
-      setError('Failed to load assignment');
-      console.error('Error loading assignment:', err);
-    } finally {
-      setLoading(false);
-    }
-  });
-
   const revealAssignment = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      // In a real implementation, we would call an API to reveal the assignment
-      // For demo purposes, we'll create a mock assignment
-      const mockAssignment: Assignment = {
-        id: 'mock-assignee-id',
-        name: 'Jane Doe',
-        email: 'jane@example.com',
-        wishList: 'I would love a new book, a cozy sweater, or a nice coffee mug'
-      };
-      setAssignment(mockAssignment);
+    setLoading(true);
+
+    // In a real implementation, you would fetch the assignment from the backend
+    // const assignment = await gamesService.getAssignment(props.gameId);
+    // setAssignment(assignment);
+
+    // For demo purposes, we'll use a placeholder
+    setTimeout(() => {
+      setAssignment('Alex Johnson');
       setRevealed(true);
-    } catch (err) {
-      setError('Failed to reveal assignment');
-      console.error('Error revealing assignment:', err);
-    } finally {
       setLoading(false);
-    }
+    }, 1500);
   };
 
-  if (loading()) {
-    return <div class="loading">Loading assignment...</div>;
-  }
-
-  if (error()) {
-    return <div class="error-message">{error()}</div>;
-  }
-
   return (
-    <div class="assignment-reveal">
-      {!revealed() ? (
-        <div class="reveal-prompt">
-          <p>Your Secret Santa assignment is waiting for you!</p>
-          <button 
-            class="reveal-btn" 
-            onClick={revealAssignment}
-            disabled={loading()}
-          >
-            {loading() ? 'Revealing...' : 'Reveal Assignment'}
-          </button>
-        </div>
-      ) : assignment() ? (
-        <div class="assignment-details">
-          <h4>You are assigned to: <span class="assignee-name">{assignment()?.name}</span></h4>
-          
-          {assignment()?.email && (
-            <div class="assignee-contact">
-              <p><strong>Email:</strong> {assignment()?.email}</p>
-            </div>
-          )}
-          
-          {assignment()?.wishList && (
-            <div class="assignee-wishes">
-              <h5>Wish List:</h5>
-              <p>{assignment()?.wishList}</p>
-            </div>
-          )}
-          
-          <div class="assignment-actions">
-            <button 
-              class="new-reveal-btn"
-              onClick={() => {
-                setRevealed(false);
-                setAssignment(null);
-              }}
+    <Card>
+      <Box component="div" p={3} textAlign="center">
+        <Typography variant="h6" mb={2}>Your Secret Santa Assignment</Typography>
+
+        {!revealed() ? (
+          <Box component="div">
+            <Typography variant="body1" color="textSecondary" mb={3}>
+              Your Secret Santa assignment is ready! Click the button below to reveal who you'll be giving a gift to.
+            </Typography>
+
+            <Button
+              variant="contained"
+              size="large"
+              onClick={revealAssignment}
+              disabled={loading() || !props.isGameStarted}
             >
-              Hide Assignment
-            </button>
-          </div>
-        </div>
-      ) : (
-        <p>No assignment found. The game may not be started yet.</p>
-      )}
-    </div>
+              {loading() ? 'Revealing...' : 'Reveal My Assignment'}
+            </Button>
+
+            {!props.isGameStarted && (
+              <Typography color="textSecondary" mt={2}>
+                The game hasn't started yet. Please wait for the creator to start the game.
+              </Typography>
+            )}
+          </Box>
+        ) : (
+          <Box component="div">
+            <Typography variant="h4" color="primary" mb={2}>
+              🎁 {assignment()} 🎁
+            </Typography>
+            <Typography variant="body1" color="textSecondary">
+              This is the person you'll be giving a gift to! Remember to keep it a secret. 🤫
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    </Card>
   );
 };
 

@@ -1,49 +1,62 @@
 import { For } from 'solid-js';
-
-interface Participant {
-  id: string;
-  name: string;
-  email: string;
-  isCreator?: boolean;
-}
+import type { Participant } from '../types';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Box, List, ListItem, ListItemText, ListItemSecondaryAction, Chip } from '@suid/material';
 
 interface ParticipantsListProps {
   participants: Participant[];
-  isCreator: boolean;
+  isCreator?: boolean;
   onRemoveParticipant?: (participantId: string) => void;
 }
 
 const ParticipantsList = (props: ParticipantsListProps) => {
   return (
-    <div class="participants-list">
-      {props.participants.length > 0 ? (
-        <ul class="participants-grid">
-          <For each={props.participants}>
-            {(participant) => (
-              <li class={`participant-item ${participant.isCreator ? 'creator' : ''}`}>
-                <div class="participant-info">
-                  <span class="participant-name">{participant.name}</span>
+    <Card>
+      <Box p={3}>
+        {props.participants.length > 0 ? (
+          <List>
+            <For each={props.participants}>
+              {(participant) => (
+                <ListItem>
+                  <ListItemText
+                    primary={participant.name}
+                    secondary={participant.email}
+                  />
                   {participant.isCreator && (
-                    <span class="creator-badge">Creator</span>
+                    <Chip
+                      label="Creator"
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
                   )}
-                </div>
-                {props.isCreator && participant.id && !participant.isCreator && (
-                  <button
-                    class="remove-participant-btn"
-                    onClick={() => props.onRemoveParticipant?.(participant.id)}
-                    title={`Remove ${participant.name}`}
-                  >
-                    &times;
-                  </button>
-                )}
-              </li>
-            )}
-          </For>
-        </ul>
-      ) : (
-        <p class="no-participants">No participants yet. Be the first to join!</p>
-      )}
-    </div>
+                  {props.isCreator && participant.id && !participant.isCreator && (
+                    <ListItemSecondaryAction>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        onClick={() => props.onRemoveParticipant?.(participant.id)}
+                      >
+                        Remove
+                      </Button>
+                    </ListItemSecondaryAction>
+                  )}
+                </ListItem>
+              )}
+            </For>
+          </List>
+        ) : (
+          <Box textAlign="center" py={4}>
+            <ListItemText
+              primary="No participants yet"
+              secondary="Be the first to join this game!"
+            />
+          </Box>
+        )}
+      </Box>
+    </Card>
   );
 };
 

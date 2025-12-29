@@ -1,6 +1,10 @@
 import { createSignal } from 'solid-js';
 import type { CreateGameRequest, Game } from '../types';
 import gamesService from '../services/games.service';
+import { Card } from '../components/ui/Card';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
+import { Box, Typography } from '@suid/material';
 
 interface GameCreationFormProps {
   onClose: () => void;
@@ -42,97 +46,98 @@ const GameCreationForm = (props: GameCreationFormProps) => {
   };
 
   return (
-    <div class="game-creation-form-overlay">
-      <div class="game-creation-form">
-        <div class="form-header">
-          <h2>Create New Game</h2>
-          <button class="close-button" onClick={props.onClose} disabled={loading()}>
+    <Card sx={{ maxWidth: '600px', width: '100%', margin: '0 auto' }}>
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h6">Create New Game</Typography>
+          <Button
+            variant="text"
+            onClick={props.onClose}
+            disabled={loading()}
+            style={{ minWidth: 'auto' }}
+          >
             &times;
-          </button>
-        </div>
-        
+          </Button>
+        </Box>
+
         {error() && (
-          <div class="error-message">
-            {error()}
-          </div>
+          <Box sx={{ mb: 2 }}>
+            <Typography color="error">{error()}</Typography>
+          </Box>
         )}
-        
+
         <form onSubmit={handleSubmit}>
-          <div class="form-group">
-            <label for="game-name">Game Name *</label>
-            <input
-              id="game-name"
-              type="text"
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Input
+              label="Game Name *"
               value={name()}
-              onInput={(e) => setName(e.currentTarget.value)}
+              onInput={(e: any) => setName(e.currentTarget.value)}
               required
               disabled={loading()}
               placeholder="Enter game name"
             />
-          </div>
-          
-          <div class="form-group">
-            <label for="game-description">Description</label>
-            <textarea
-              id="game-description"
+
+            <Input
+              label="Description"
+              multiline
+              rows={3}
               value={description()}
-              onInput={(e) => setDescription(e.currentTarget.value)}
+              onInput={(e: any) => setDescription(e.currentTarget.value)}
               disabled={loading()}
               placeholder="Enter game description"
-              rows={3}
             />
-          </div>
-          
-          <div class="form-group">
-            <label for="participant-limit">Participant Limit *</label>
-            <input
-              id="participant-limit"
+
+            <Input
+              label="Participant Limit *"
               type="number"
               min="3"
               max="100"
-              value={participantLimit()}
-              onInput={(e) => setParticipantLimit(Number(e.currentTarget.value))}
+              value={participantLimit().toString()}
+              onInput={(e: any) => setParticipantLimit(Number(e.currentTarget.value))}
               required
               disabled={loading()}
             />
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label for="start-date">Start Date</label>
-              <input
-                id="start-date"
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+              <Input
+                label="Start Date"
                 type="date"
                 value={startDate()}
-                onInput={(e) => setStartDate(e.currentTarget.value)}
+                onInput={(e: any) => setStartDate(e.currentTarget.value)}
                 disabled={loading()}
               />
-            </div>
-            
-            <div class="form-group">
-              <label for="end-date">End Date</label>
-              <input
-                id="end-date"
+
+              <Input
+                label="End Date"
                 type="date"
                 value={endDate()}
-                onInput={(e) => setEndDate(e.currentTarget.value)}
+                onInput={(e: any) => setEndDate(e.currentTarget.value)}
                 disabled={loading()}
-                min={startDate() || undefined}
+                min={startDate()}
               />
-            </div>
-          </div>
-          
-          <div class="form-actions">
-            <button type="button" onClick={props.onClose} disabled={loading()}>
-              Cancel
-            </button>
-            <button type="submit" disabled={loading()}>
-              {loading() ? 'Creating...' : 'Create Game'}
-            </button>
-          </div>
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
+              <Button
+                variant="outlined"
+                type="button"
+                onClick={props.onClose}
+                disabled={loading()}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                type="submit"
+                disabled={loading()}
+              >
+                {loading() ? 'Creating...' : 'Create Game'}
+              </Button>
+            </Box>
+          </Box>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Card>
   );
 };
 
