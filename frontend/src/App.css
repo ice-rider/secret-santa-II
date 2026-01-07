@@ -1,0 +1,22 @@
+/* You can add any custom styles here that are not covered by Tailwind */
+/* Most of our styling will be done with Tailwind classes */
+
+/* Example of custom scrollbar if needed */
+/*
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+*/

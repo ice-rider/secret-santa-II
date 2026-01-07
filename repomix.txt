@@ -1,0 +1,2457 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+frontend/
+  public/
+    vite.svg
+  src/
+    assets/
+      react.svg
+    components/
+      auth/
+        callback/
+          GitHubCallback.tsx
+          GoogleCallback.tsx
+        LoginForm.tsx
+        OAuthButtons.tsx
+        RegistrationForm.tsx
+        TelegramAuthButton.tsx
+        TelegramIcon.tsx
+      games/
+        GameCard.tsx
+        GameCreationModal.tsx
+        GameList.tsx
+      routing/
+        ProtectedRoute.tsx
+    contexts/
+      auth/
+        AuthContext.tsx
+      ApiContext.tsx
+    hooks/
+      useTelegramWebApp.ts
+    lib/
+      api/
+        auth.ts
+        client.ts
+      validation/
+        auth.ts
+    pages/
+      GameDetailPage.tsx
+      GameListPage.tsx
+    App.css
+    App.tsx
+    index.css
+    main.tsx
+  .gitignore
+  eslint.config.js
+  index.html
+  package.json
+  postcss.config.js
+  README.md
+  tailwind.config.js
+  tsconfig.app.json
+  tsconfig.json
+  tsconfig.node.json
+  vite.config.ts
+.gitignore
+LICENSE
+plan.md
+README.md
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="frontend/public/vite.svg">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--logos" width="31.88" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 257"><defs><linearGradient id="IconifyId1813088fe1fbc01fb466" x1="-.828%" x2="57.636%" y1="7.652%" y2="78.411%"><stop offset="0%" stop-color="#41D1FF"></stop><stop offset="100%" stop-color="#BD34FE"></stop></linearGradient><linearGradient id="IconifyId1813088fe1fbc01fb467" x1="43.376%" x2="50.316%" y1="2.242%" y2="89.03%"><stop offset="0%" stop-color="#FFEA83"></stop><stop offset="8.333%" stop-color="#FFDD35"></stop><stop offset="100%" stop-color="#FFA800"></stop></linearGradient></defs><path fill="url(#IconifyId1813088fe1fbc01fb466)" d="M255.153 37.938L134.897 252.976c-2.483 4.44-8.862 4.466-11.382.048L.875 37.958c-2.746-4.814 1.371-10.646 6.827-9.67l120.385 21.517a6.537 6.537 0 0 0 2.322-.004l117.867-21.483c5.438-.991 9.574 4.796 6.877 9.62Z"></path><path fill="url(#IconifyId1813088fe1fbc01fb467)" d="M185.432.063L96.44 17.501a3.268 3.268 0 0 0-2.634 3.014l-5.474 92.456a3.268 3.268 0 0 0 3.997 3.378l24.777-5.718c2.318-.535 4.413 1.507 3.936 3.838l-7.361 36.047c-.495 2.426 1.782 4.5 4.151 3.78l15.304-4.649c2.372-.72 4.652 1.36 4.15 3.788l-11.698 56.621c-.732 3.542 3.979 5.473 5.943 2.437l1.313-2.028l72.516-144.72c1.215-2.423-.88-5.186-3.54-4.672l-25.505 4.922c-2.396.462-4.435-1.77-3.759-4.114l16.646-57.705c.677-2.35-1.37-4.583-3.769-4.113Z"></path></svg>
+</file>
+
+<file path="frontend/src/assets/react.svg">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--logos" width="35.93" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 228"><path fill="#00D8FF" d="M210.483 73.824a171.49 171.49 0 0 0-8.24-2.597c.465-1.9.893-3.777 1.273-5.621c6.238-30.281 2.16-54.676-11.769-62.708c-13.355-7.7-35.196.329-57.254 19.526a171.23 171.23 0 0 0-6.375 5.848a155.866 155.866 0 0 0-4.241-3.917C100.759 3.829 77.587-4.822 63.673 3.233C50.33 10.957 46.379 33.89 51.995 62.588a170.974 170.974 0 0 0 1.892 8.48c-3.28.932-6.445 1.924-9.474 2.98C17.309 83.498 0 98.307 0 113.668c0 15.865 18.582 31.778 46.812 41.427a145.52 145.52 0 0 0 6.921 2.165a167.467 167.467 0 0 0-2.01 9.138c-5.354 28.2-1.173 50.591 12.134 58.266c13.744 7.926 36.812-.22 59.273-19.855a145.567 145.567 0 0 0 5.342-4.923a168.064 168.064 0 0 0 6.92 6.314c21.758 18.722 43.246 26.282 56.54 18.586c13.731-7.949 18.194-32.003 12.4-61.268a145.016 145.016 0 0 0-1.535-6.842c1.62-.48 3.21-.974 4.76-1.488c29.348-9.723 48.443-25.443 48.443-41.52c0-15.417-17.868-30.326-45.517-39.844Zm-6.365 70.984c-1.4.463-2.836.91-4.3 1.345c-3.24-10.257-7.612-21.163-12.963-32.432c5.106-11 9.31-21.767 12.459-31.957c2.619.758 5.16 1.557 7.61 2.4c23.69 8.156 38.14 20.213 38.14 29.504c0 9.896-15.606 22.743-40.946 31.14Zm-10.514 20.834c2.562 12.94 2.927 24.64 1.23 33.787c-1.524 8.219-4.59 13.698-8.382 15.893c-8.067 4.67-25.32-1.4-43.927-17.412a156.726 156.726 0 0 1-6.437-5.87c7.214-7.889 14.423-17.06 21.459-27.246c12.376-1.098 24.068-2.894 34.671-5.345a134.17 134.17 0 0 1 1.386 6.193ZM87.276 214.515c-7.882 2.783-14.16 2.863-17.955.675c-8.075-4.657-11.432-22.636-6.853-46.752a156.923 156.923 0 0 1 1.869-8.499c10.486 2.32 22.093 3.988 34.498 4.994c7.084 9.967 14.501 19.128 21.976 27.15a134.668 134.668 0 0 1-4.877 4.492c-9.933 8.682-19.886 14.842-28.658 17.94ZM50.35 144.747c-12.483-4.267-22.792-9.812-29.858-15.863c-6.35-5.437-9.555-10.836-9.555-15.216c0-9.322 13.897-21.212 37.076-29.293c2.813-.98 5.757-1.905 8.812-2.773c3.204 10.42 7.406 21.315 12.477 32.332c-5.137 11.18-9.399 22.249-12.634 32.792a134.718 134.718 0 0 1-6.318-1.979Zm12.378-84.26c-4.811-24.587-1.616-43.134 6.425-47.789c8.564-4.958 27.502 2.111 47.463 19.835a144.318 144.318 0 0 1 3.841 3.545c-7.438 7.987-14.787 17.08-21.808 26.988c-12.04 1.116-23.565 2.908-34.161 5.309a160.342 160.342 0 0 1-1.76-7.887Zm110.427 27.268a347.8 347.8 0 0 0-7.785-12.803c8.168 1.033 15.994 2.404 23.343 4.08c-2.206 7.072-4.956 14.465-8.193 22.045a381.151 381.151 0 0 0-7.365-13.322Zm-45.032-43.861c5.044 5.465 10.096 11.566 15.065 18.186a322.04 322.04 0 0 0-30.257-.006c4.974-6.559 10.069-12.652 15.192-18.18ZM82.802 87.83a323.167 323.167 0 0 0-7.227 13.238c-3.184-7.553-5.909-14.98-8.134-22.152c7.304-1.634 15.093-2.97 23.209-3.984a321.524 321.524 0 0 0-7.848 12.897Zm8.081 65.352c-8.385-.936-16.291-2.203-23.593-3.793c2.26-7.3 5.045-14.885 8.298-22.6a321.187 321.187 0 0 0 7.257 13.246c2.594 4.48 5.28 8.868 8.038 13.147Zm37.542 31.03c-5.184-5.592-10.354-11.779-15.403-18.433c4.902.192 9.899.29 14.978.29c5.218 0 10.376-.117 15.453-.343c-4.985 6.774-10.018 12.97-15.028 18.486Zm52.198-57.817c3.422 7.8 6.306 15.345 8.596 22.52c-7.422 1.694-15.436 3.058-23.88 4.071a382.417 382.417 0 0 0 7.859-13.026a347.403 347.403 0 0 0 7.425-13.565Zm-16.898 8.101a358.557 358.557 0 0 1-12.281 19.815a329.4 329.4 0 0 1-23.444.823c-7.967 0-15.716-.248-23.178-.732a310.202 310.202 0 0 1-12.513-19.846h.001a307.41 307.41 0 0 1-10.923-20.627a310.278 310.278 0 0 1 10.89-20.637l-.001.001a307.318 307.318 0 0 1 12.413-19.761c7.613-.576 15.42-.876 23.31-.876H128c7.926 0 15.743.303 23.354.883a329.357 329.357 0 0 1 12.335 19.695a358.489 358.489 0 0 1 11.036 20.54a329.472 329.472 0 0 1-11 20.722Zm22.56-122.124c8.572 4.944 11.906 24.881 6.52 51.026c-.344 1.668-.73 3.367-1.15 5.09c-10.622-2.452-22.155-4.275-34.23-5.408c-7.034-10.017-14.323-19.124-21.64-27.008a160.789 160.789 0 0 1 5.888-5.4c18.9-16.447 36.564-22.941 44.612-18.3ZM128 90.808c12.625 0 22.86 10.235 22.86 22.86s-10.235 22.86-22.86 22.86s-22.86-10.235-22.86-22.86s10.235-22.86 22.86-22.86Z"></path></svg>
+</file>
+
+<file path="frontend/src/components/auth/callback/GitHubCallback.tsx">
+import React, { useEffect } from 'react';
+
+const GitHubCallback: React.FC = () => {
+  useEffect(() => {
+    // Extract the authorization code from the URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const error = urlParams.get('error');
+    
+    // Check if this is running in a popup window
+    const isPopup = window.opener && window.opener !== window;
+    
+    if (error) {
+      // Send error message to the parent window
+      if (isPopup && window.opener) {
+        window.opener.postMessage({
+          type: 'oauth_error',
+          message: `GitHub OAuth error: ${error}`
+        }, window.location.origin);
+        
+        // Close the popup after a short delay
+        setTimeout(() => {
+          window.close();
+        }, 1500);
+      } else {
+        console.error('GitHub OAuth error:', error);
+      }
+      return;
+    }
+    
+    if (code) {
+      // Send success message with the authorization code to the parent window
+      if (isPopup && window.opener) {
+        window.opener.postMessage({
+          type: 'oauth_success',
+          provider: 'github',
+          code: code
+        }, window.location.origin);
+        
+        // Close the popup after a short delay
+        setTimeout(() => {
+          window.close();
+        }, 1500);
+      } else {
+        console.log('Received GitHub OAuth code:', code);
+        // In a non-popup context, we might redirect or handle differently
+      }
+    } else {
+      // No code or error in the URL - this shouldn't happen in a proper OAuth flow
+      if (isPopup && window.opener) {
+        window.opener.postMessage({
+          type: 'oauth_error',
+          message: 'No authorization code received from GitHub'
+        }, window.location.origin);
+        
+        setTimeout(() => {
+          window.close();
+        }, 1500);
+      }
+    }
+  }, []);
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div>
+        <h2>Processing GitHub Authentication...</h2>
+        <p>Please wait while we complete the authentication process.</p>
+      </div>
+    </div>
+  );
+};
+
+export default GitHubCallback;
+</file>
+
+<file path="frontend/src/components/auth/callback/GoogleCallback.tsx">
+import React, { useEffect } from 'react';
+
+const GoogleCallback: React.FC = () => {
+  useEffect(() => {
+    // Extract the authorization code from the URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const error = urlParams.get('error');
+    
+    // Check if this is running in a popup window
+    const isPopup = window.opener && window.opener !== window;
+    
+    if (error) {
+      // Send error message to the parent window
+      if (isPopup && window.opener) {
+        window.opener.postMessage({
+          type: 'oauth_error',
+          message: `Google OAuth error: ${error}`
+        }, window.location.origin);
+        
+        // Close the popup after a short delay
+        setTimeout(() => {
+          window.close();
+        }, 1500);
+      } else {
+        console.error('Google OAuth error:', error);
+      }
+      return;
+    }
+    
+    if (code) {
+      // Send success message with the authorization code to the parent window
+      if (isPopup && window.opener) {
+        window.opener.postMessage({
+          type: 'oauth_success',
+          provider: 'google',
+          code: code
+        }, window.location.origin);
+        
+        // Close the popup after a short delay
+        setTimeout(() => {
+          window.close();
+        }, 1500);
+      } else {
+        console.log('Received Google OAuth code:', code);
+        // In a non-popup context, we might redirect or handle differently
+      }
+    } else {
+      // No code or error in the URL - this shouldn't happen in a proper OAuth flow
+      if (isPopup && window.opener) {
+        window.opener.postMessage({
+          type: 'oauth_error',
+          message: 'No authorization code received from Google'
+        }, window.location.origin);
+        
+        setTimeout(() => {
+          window.close();
+        }, 1500);
+      }
+    }
+  }, []);
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div>
+        <h2>Processing Google Authentication...</h2>
+        <p>Please wait while we complete the authentication process.</p>
+      </div>
+    </div>
+  );
+};
+
+export default GoogleCallback;
+</file>
+
+<file path="frontend/src/components/auth/LoginForm.tsx">
+import React, { useState } from 'react';
+import { TextField, Button, Box, Typography, Alert, CircularProgress, Link } from '@mui/material';
+import { useApiClient } from '../../contexts/ApiContext';
+import { loginSchema, type LoginData } from '../../lib/validation/auth';
+import { ZodError } from 'zod';
+import OAuthButtons from './OAuthButtons';
+
+const LoginForm: React.FC = () => {
+  const { authService } = useApiClient();
+  const [formData, setFormData] = useState<LoginData>({
+    email: '',
+    password: '',
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Clear error for the field being edited
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Validate form data using Zod
+      loginSchema.parse(formData);
+
+      // For mock implementation, we'll simulate a successful login
+      // In a real app, you would call the actual API
+      const mockToken = 'mock-jwt-token-for-testing';
+
+      // Store the token in the API client
+      authService.getApiClient().setAuthToken(mockToken);
+
+      setSuccess(true);
+
+      // Redirect to games page after successful login
+      setTimeout(() => {
+        window.location.href = '/games';
+      }, 1500);
+    } catch (err: any) {
+      if (err instanceof ZodError) {
+        // Handle Zod validation errors
+        const zodErrors: Record<string, string> = {};
+        err.issues.forEach((issue) => {
+          if (issue.path) {
+            const field = issue.path[0] as string;
+            zodErrors[field] = issue.message;
+          }
+        });
+        setErrors(zodErrors);
+      } else {
+        console.error('Login error:', err);
+        setError(err.message || 'An error occurred during login');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Box sx={{ maxWidth: 400, mx: 'auto', mt: 4, p: 3, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+      <Typography variant="h5" component="h2" gutterBottom align="center">
+        Sign In
+      </Typography>
+      
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          Login successful! Redirecting...
+        </Alert>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <TextField
+          fullWidth
+          label="Email"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          margin="normal"
+          variant="outlined"
+          required
+          error={!!errors.email}
+          helperText={errors.email}
+        />
+
+        <TextField
+          fullWidth
+          label="Password"
+          name="password"
+          type="password"
+          value={formData.password}
+          onChange={handleChange}
+          margin="normal"
+          variant="outlined"
+          required
+          error={!!errors.password}
+          helperText={errors.password}
+        />
+        
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ mt: 2 }}
+          disabled={loading}
+        >
+          {loading ? <CircularProgress size={24} /> : 'Login'}
+        </Button>
+      </form>
+
+      <OAuthButtons
+        onAuthSuccess={() => {
+          // Handle successful OAuth login
+          window.location.href = '/dashboard';
+        }}
+        onError={(error) => {
+          setError(error);
+        }}
+      />
+
+      <Box sx={{ mt: 2, textAlign: 'center' }}>
+        <Typography variant="body2">
+          Don't have an account?{' '}
+          <Link href="/register" underline="hover" component="a">
+            Register here
+          </Link>
+        </Typography>
+      </Box>
+    </Box>
+  );
+};
+
+export default LoginForm;
+</file>
+
+<file path="frontend/src/components/auth/OAuthButtons.tsx">
+import React, { useState } from 'react';
+import { Button, Box, Typography, Alert, CircularProgress } from '@mui/material';
+import { useApiClient } from '../../contexts/ApiContext';
+import { Google as GoogleIcon, GitHub as GitHubIcon } from '@mui/icons-material';
+import TelegramAuthButton from './TelegramAuthButton';
+import { useTelegramWebApp } from '../../hooks/useTelegramWebApp';
+
+interface OAuthButtonsProps {
+  onAuthSuccess?: () => void;
+  onError?: (error: string) => void;
+}
+
+const OAuthButtons: React.FC<OAuthButtonsProps> = ({ onAuthSuccess, onError }) => {
+  const { authService } = useApiClient();
+  const { isTelegram, telegramUser } = useTelegramWebApp();
+  const [loading, setLoading] = useState<{[key: string]: boolean}>({
+    google: false,
+    github: false
+  });
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGoogleAuth = async () => {
+    setLoading(prev => ({ ...prev, google: true }));
+    setError(null);
+
+    try {
+      // For mock implementation, we'll simulate a successful OAuth login
+      // In a real app, you would follow the actual OAuth flow
+      const mockToken = 'mock-jwt-token-for-testing';
+
+      // Store the token in the API client
+      authService.getApiClient().setAuthToken(mockToken);
+
+      if (onAuthSuccess) {
+        onAuthSuccess();
+      }
+    } catch (err: any) {
+      console.error('Google OAuth error:', err);
+      setError(err.message || 'An error occurred during Google authentication');
+      if (onError) {
+        onError(err.message || 'An error occurred during Google authentication');
+      }
+    } finally {
+      setLoading(prev => ({ ...prev, google: false }));
+    }
+  };
+
+  const handleGitHubAuth = async () => {
+    setLoading(prev => ({ ...prev, github: true }));
+    setError(null);
+
+    try {
+      // For mock implementation, we'll simulate a successful OAuth login
+      // In a real app, you would follow the actual OAuth flow
+      const mockToken = 'mock-jwt-token-for-testing';
+
+      // Store the token in the API client
+      authService.getApiClient().setAuthToken(mockToken);
+
+      if (onAuthSuccess) {
+        onAuthSuccess();
+      }
+    } catch (err: any) {
+      console.error('GitHub OAuth error:', err);
+      setError(err.message || 'An error occurred during GitHub authentication');
+      if (onError) {
+        onError(err.message || 'An error occurred during GitHub authentication');
+      }
+    } finally {
+      setLoading(prev => ({ ...prev, github: false }));
+    }
+  };
+
+  return (
+    <Box sx={{ width: '100%', mt: 2 }}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      
+      <Typography variant="body2" align="center" sx={{ mb: 1, color: 'text.secondary' }}>
+        Or sign in with
+      </Typography>
+      
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        {isTelegram && (
+          <Box sx={{ mb: 1, textAlign: 'center' }}>
+            <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 'medium' }}>
+              Welcome from Telegram! ({telegramUser?.first_name})
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+              You can use Telegram to sign in or choose another method below
+            </Typography>
+          </Box>
+        )}
+
+        <TelegramAuthButton
+          onAuthSuccess={onAuthSuccess}
+          onError={onError}
+        />
+
+        <Typography variant="body2" align="center" sx={{ my: 1, color: 'text.secondary' }}>
+          Or sign in with
+        </Typography>
+
+        <Button
+          variant="outlined"
+          fullWidth
+          startIcon={loading.google ? <CircularProgress size={20} /> : <GoogleIcon />}
+          onClick={handleGoogleAuth}
+          disabled={loading.google}
+          sx={{
+            borderColor: 'grey.300',
+            color: 'text.primary',
+            '&:hover': {
+              borderColor: 'grey.400',
+            }
+          }}
+        >
+          {loading.google ? 'Signing in...' : 'Continue with Google'}
+        </Button>
+
+        <Button
+          variant="outlined"
+          fullWidth
+          startIcon={loading.github ? <CircularProgress size={20} /> : <GitHubIcon />}
+          onClick={handleGitHubAuth}
+          disabled={loading.github}
+          sx={{
+            borderColor: 'grey.300',
+            color: 'text.primary',
+            '&:hover': {
+              borderColor: 'grey.400',
+            }
+          }}
+        >
+          {loading.github ? 'Signing in...' : 'Continue with GitHub'}
+        </Button>
+      </Box>
+    </Box>
+  );
+};
+
+export default OAuthButtons;
+</file>
+
+<file path="frontend/src/components/auth/RegistrationForm.tsx">
+import React, { useState } from 'react';
+import { TextField, Button, Box, Typography, Alert, CircularProgress } from '@mui/material';
+import { useApiClient } from '../../contexts/ApiContext';
+import { registrationSchema, type RegistrationData } from '../../lib/validation/auth';
+import { ZodError } from 'zod';
+import OAuthButtons from './OAuthButtons';
+
+const RegistrationForm: React.FC = () => {
+  const { authService } = useApiClient();
+  const [formData, setFormData] = useState<RegistrationData>({
+    email: '',
+    password: '',
+    name: '',
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Clear error for the field being edited
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
+    try {
+      // Validate form data using Zod
+      registrationSchema.parse(formData);
+
+      // For mock implementation, we'll simulate a successful registration
+      // In a real app, you would call the actual API
+      const mockToken = 'mock-jwt-token-for-testing';
+
+      // Store the token in the API client
+      authService.getApiClient().setAuthToken(mockToken);
+
+      setSuccess(true);
+      setFormData({ email: '', password: '', name: '' });
+
+      // Redirect to games page after successful registration
+      setTimeout(() => {
+        window.location.href = '/games';
+      }, 1500);
+    } catch (err: any) {
+      if (err instanceof ZodError) {
+        // Handle Zod validation errors
+        const zodErrors: Record<string, string> = {};
+        err.issues.forEach((issue) => {
+          if (issue.path) {
+            const field = issue.path[0] as string;
+            zodErrors[field] = issue.message;
+          }
+        });
+        setErrors(zodErrors);
+      } else {
+        console.error('Registration error:', err);
+        setError(err.message || 'An error occurred during registration');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Box sx={{ maxWidth: 400, mx: 'auto', mt: 4, p: 3, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+      <Typography variant="h5" component="h2" gutterBottom align="center">
+        Create Account
+      </Typography>
+      
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          Registration successful! Please check your email to verify your account.
+        </Alert>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <TextField
+          fullWidth
+          label="Name (optional)"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          margin="normal"
+          variant="outlined"
+          error={!!errors.name}
+          helperText={errors.name}
+        />
+
+        <TextField
+          fullWidth
+          label="Email"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          margin="normal"
+          variant="outlined"
+          required
+          error={!!errors.email}
+          helperText={errors.email}
+        />
+
+        <TextField
+          fullWidth
+          label="Password"
+          name="password"
+          type="password"
+          value={formData.password}
+          onChange={handleChange}
+          margin="normal"
+          variant="outlined"
+          required
+          error={!!errors.password}
+          helperText={errors.password}
+        />
+        
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ mt: 2 }}
+          disabled={loading}
+        >
+          {loading ? <CircularProgress size={24} /> : 'Register'}
+        </Button>
+      </form>
+
+      <OAuthButtons
+        onAuthSuccess={() => {
+          // Handle successful OAuth registration/login
+          window.location.href = '/dashboard';
+        }}
+        onError={(error) => {
+          setError(error);
+        }}
+      />
+    </Box>
+  );
+};
+
+export default RegistrationForm;
+</file>
+
+<file path="frontend/src/components/auth/TelegramAuthButton.tsx">
+import React, { useState } from 'react';
+import { Button, Box, CircularProgress } from '@mui/material';
+import { useApiClient } from '../../contexts/ApiContext';
+import TelegramIcon from './TelegramIcon';
+
+interface TelegramAuthButtonProps {
+  onAuthSuccess?: () => void;
+  onError?: (error: string) => void;
+}
+
+const TelegramAuthButton: React.FC<TelegramAuthButtonProps> = ({ onAuthSuccess, onError }) => {
+  const { authService } = useApiClient();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleTelegramAuth = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // For mock implementation, we'll simulate a successful Telegram login
+      // In a real app, you would follow the actual Telegram auth flow
+      const mockToken = 'mock-jwt-token-for-testing';
+
+      // Store the token in the API client
+      authService.getApiClient().setAuthToken(mockToken);
+
+      if (onAuthSuccess) {
+        onAuthSuccess();
+      }
+    } catch (err: any) {
+      console.error('Telegram Auth error:', err);
+      setError(err.message || 'An error occurred during Telegram authentication');
+      if (onError) {
+        onError(err.message || 'An error occurred during Telegram authentication');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Auto-login if we're in Telegram Web App and user hasn't interacted yet
+  React.useEffect(() => {
+    // Check if we're in a Telegram Web App environment
+    if (typeof (window as any).Telegram !== 'undefined' && (window as any).Telegram.WebApp) {
+      const webApp = (window as any).Telegram.WebApp;
+
+      // If initData exists, we can auto-authenticate
+      if (webApp.initData || webApp.initDataUnsafe) {
+        // Only auto-login if this is the first render and user hasn't interacted
+        // In a real app, you might want to check if the user is already authenticated
+        // and if not, auto-login with Telegram data
+        console.log('User came from Telegram, auto-authentication available');
+      }
+    }
+  }, []);
+
+  return (
+    <Box sx={{ width: '100%', mt: 1 }}>
+      {error && (
+        <div style={{ color: 'red', fontSize: '0.75rem', marginBottom: '8px' }}>
+          {error}
+        </div>
+      )}
+      
+      <Button
+        variant="outlined"
+        fullWidth
+        startIcon={loading ? <CircularProgress size={20} /> : <TelegramIcon />}
+        onClick={handleTelegramAuth}
+        disabled={loading}
+        sx={{ 
+          borderColor: '#0088cc',
+          color: '#0088cc',
+          '&:hover': {
+            borderColor: '#006699',
+            backgroundColor: 'rgba(0, 136, 204, 0.04)',
+          }
+        }}
+      >
+        {loading ? 'Signing in...' : 'Continue with Telegram'}
+      </Button>
+    </Box>
+  );
+};
+
+export default TelegramAuthButton;
+</file>
+
+<file path="frontend/src/components/auth/TelegramIcon.tsx">
+import React from 'react';
+import { SvgIcon } from '@mui/material';
+import type { SvgIconProps } from '@mui/material';
+
+const TelegramIcon: React.FC<SvgIconProps> = (props) => {
+  return (
+    <SvgIcon {...props}>
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.78 5.42-.88 6.35-.06.56-.15.84-.3.98-.15.15-.32.2-.55.12-.23-.07-.62-.24-1.06-.41-.44-.18-1.18-.44-1.51-.53-.33-.09-1.06.36-1.6 1.18-.54.82-1.8 1.28-2.3 1.28-.3 0-.6-.04-.88-.12-.28-.08-.5-.2-.68-.37-.18-.18-.27-.4-.27-.65 0-.2.07-.4.2-.58.13-.18.35-.3.65-.35.3-.05.7-.15 1.2-.3.5-.15 1.2-.35 1.5-.45.3-.1.6-.25.85-.4.25-.15.45-.3.6-.5.15-.2.23-.4.23-.65 0-.2-.07-.35-.2-.45-.13-.1-.3-.15-.5-.15z" />
+    </SvgIcon>
+  );
+};
+
+export default TelegramIcon;
+</file>
+
+<file path="frontend/src/components/games/GameCard.tsx">
+import React from 'react';
+import { Card, CardContent, Typography, Chip, Box, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+
+interface Game {
+  id: string;
+  title: string;
+  status: 'draft' | 'active' | 'completed';
+  participantCount: number;
+  createdAt: string;
+}
+
+interface GameCardProps {
+  game: Game;
+}
+
+const GameCard: React.FC<GameCardProps> = ({ game }) => {
+  const navigate = useNavigate();
+  
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'primary';
+      case 'draft': return 'default';
+      case 'completed': return 'success';
+      default: return 'default';
+    }
+  };
+
+  return (
+    <Card sx={{ mb: 2 }}>
+      <CardContent>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box>
+            <Typography variant="h6" component="h3">
+              {game.title}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Created: {new Date(game.createdAt).toLocaleDateString()}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Chip 
+              label={game.status.charAt(0).toUpperCase() + game.status.slice(1)} 
+              color={getStatusColor(game.status) as any}
+              size="small"
+            />
+            <Typography variant="body2">
+              {game.participantCount} {game.participantCount === 1 ? 'participant' : 'participants'}
+            </Typography>
+            <Button 
+              variant="contained" 
+              size="small"
+              onClick={() => navigate(`/games/${game.id}`)}
+            >
+              View
+            </Button>
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default GameCard;
+</file>
+
+<file path="frontend/src/components/games/GameCreationModal.tsx">
+import React, { useState } from 'react';
+import { 
+  Button, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  TextField, 
+  Box 
+} from '@mui/material';
+
+const GameCreationModal: React.FC = () => {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState('');
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, we would call an API to create the game
+    console.log('Creating game:', title);
+    handleClose();
+  };
+
+  return (
+    <Box sx={{ mb: 3 }}>
+      <Button variant="contained" onClick={handleOpen}>
+        Create New Game
+      </Button>
+      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Create New Secret Santa Game</DialogTitle>
+        <form onSubmit={handleSubmit}>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Game Title"
+              fullWidth
+              variant="outlined"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button type="submit" variant="contained">Create</Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+    </Box>
+  );
+};
+
+export default GameCreationModal;
+</file>
+
+<file path="frontend/src/components/games/GameList.tsx">
+import React, { useState } from 'react';
+import GameCard from './GameCard';
+import { Box, Tabs, Tab } from '@mui/material';
+
+interface Game {
+  id: string;
+  title: string;
+  status: 'draft' | 'active' | 'completed';
+  participantCount: number;
+  createdAt: string;
+  isCreator: boolean;
+  isParticipant: boolean;
+}
+
+const GameList: React.FC = () => {
+  // Mock data for now
+  const allGames: Game[] = [
+    { id: '1', title: 'Christmas 2023', status: 'active', participantCount: 6, createdAt: '2023-11-01', isCreator: true, isParticipant: true },
+    { id: '2', title: 'Office Secret Santa', status: 'draft', participantCount: 0, createdAt: '2023-11-15', isCreator: true, isParticipant: true },
+    { id: '3', title: 'Family Exchange', status: 'completed', participantCount: 8, createdAt: '2023-10-20', isCreator: false, isParticipant: true },
+    { id: '4', title: 'Friends Group', status: 'active', participantCount: 5, createdAt: '2023-12-01', isCreator: false, isParticipant: true },
+  ];
+
+  const [filter, setFilter] = useState<'all' | 'created' | 'participating'>('all');
+
+  // Filter games based on the selected filter
+  const filteredGames = allGames.filter(game => {
+    if (filter === 'created') {
+      return game.isCreator;
+    } else if (filter === 'participating') {
+      return game.isParticipant && !game.isCreator;
+    }
+    return true; // 'all' filter
+  });
+
+  const handleFilterChange = (event: React.SyntheticEvent, newValue: 'all' | 'created' | 'participating') => {
+    setFilter(newValue);
+  };
+
+  return (
+    <Box sx={{ mt: 4 }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+        <Tabs value={filter} onChange={handleFilterChange}>
+          <Tab value="all" label="All Games" />
+          <Tab value="created" label="Created by Me" />
+          <Tab value="participating" label="Participating" />
+        </Tabs>
+      </Box>
+
+      {filteredGames.map((game) => (
+        <GameCard key={game.id} game={game} />
+      ))}
+    </Box>
+  );
+};
+
+export default GameList;
+</file>
+
+<file path="frontend/src/components/routing/ProtectedRoute.tsx">
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/auth/AuthContext';
+
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  fallbackPath?: string;
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+  children, 
+  fallbackPath = '/login' 
+}) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+
+  // If the user is loading, show a loading indicator
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
+  // If the user is not authenticated, redirect to the fallback path
+  if (!isAuthenticated) {
+    // Store the current location to redirect back after login
+    return <Navigate to={fallbackPath} state={{ from: location }} replace />;
+  }
+
+  // If the user is authenticated, render the children
+  return <>{children}</>;
+};
+
+export default ProtectedRoute;
+</file>
+
+<file path="frontend/src/contexts/auth/AuthContext.tsx">
+import React, { createContext, useContext, useReducer } from 'react';
+import type { ReactNode } from 'react';
+import { ApiClient } from '../../lib/api/client';
+import { AuthService } from '../../lib/api/auth';
+
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  // Add other user properties as needed
+}
+
+interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
+
+type AuthAction =
+  | { type: 'LOGIN_START' }
+  | { type: 'LOGIN_SUCCESS'; payload: { user: User; token: string } }
+  | { type: 'LOGIN_FAILURE'; payload: string }
+  | { type: 'REGISTER_START' }
+  | { type: 'REGISTER_SUCCESS'; payload: { user: User; token: string } }
+  | { type: 'REGISTER_FAILURE'; payload: string }
+  | { type: 'LOGOUT' }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null };
+
+interface AuthContextType extends AuthState {
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, name?: string) => Promise<void>;
+  logout: () => void;
+  refreshToken: () => Promise<void>;
+  authenticateWithToken: (token: string) => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const authReducer = (state: AuthState, action: AuthAction): AuthState => {
+  switch (action.type) {
+    case 'LOGIN_START':
+    case 'REGISTER_START':
+      return {
+        ...state,
+        isLoading: true,
+        error: null,
+      };
+    case 'LOGIN_SUCCESS':
+    case 'REGISTER_SUCCESS':
+      return {
+        ...state,
+        user: action.payload.user,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      };
+    case 'LOGIN_FAILURE':
+    case 'REGISTER_FAILURE':
+      return {
+        ...state,
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: action.payload,
+      };
+    case 'LOGOUT':
+      return {
+        ...state,
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+      };
+    case 'SET_LOADING':
+      return {
+        ...state,
+        isLoading: action.payload,
+      };
+    case 'SET_ERROR':
+      return {
+        ...state,
+        error: action.payload,
+      };
+    default:
+      return state;
+  }
+};
+
+interface AuthProviderProps {
+  children: ReactNode;
+  apiClient: ApiClient;
+  authService: AuthService;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children, apiClient, authService }) => {
+  const [state, dispatch] = useReducer(authReducer, {
+    user: null,
+    isAuthenticated: false,
+    isLoading: false,
+    error: null,
+  });
+
+  const authenticateWithToken = (token: string) => {
+    try {
+      // Decode the token to get user info (in a real app, you might decode JWT)
+      // For now, we'll just set a placeholder user
+      // In a real implementation, you'd verify the token with your backend
+      apiClient.setAuthToken(token);
+      
+      // You might want to fetch user details from the API here
+      // const userResponse = await apiClient.get('/auth/me');
+      // const user = userResponse.data;
+      
+      // For now, we'll use a placeholder
+      const user: User = {
+        id: 'temp-id', // This would come from the token or API call
+        email: 'temp@example.com', // This would come from the token or API call
+        name: 'Temp User', // This would come from the token or API call
+      };
+      
+      dispatch({ 
+        type: 'LOGIN_SUCCESS', 
+        payload: { user, token } 
+      });
+    } catch (error) {
+      dispatch({ 
+        type: 'LOGIN_FAILURE', 
+        payload: 'Failed to authenticate with token' 
+      });
+    }
+  };
+
+  // Check for existing token on initialization
+  React.useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      authenticateWithToken(token);
+    }
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    dispatch({ type: 'LOGIN_START' });
+
+    try {
+      // For mock implementation, we'll simulate a successful login
+      // In a real app, you would call the actual API
+      const mockToken = 'mock-jwt-token-for-testing';
+      const mockUser = {
+        id: '1',
+        email: email,
+        name: email.split('@')[0] // Use part of email as name
+      };
+
+      // Store the token in the API client
+      apiClient.setAuthToken(mockToken);
+
+      dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: { user: mockUser, token: mockToken }
+      });
+    } catch (error: any) {
+      const errorMessage = error.message || 'Login failed';
+      dispatch({
+        type: 'LOGIN_FAILURE',
+        payload: errorMessage
+      });
+      throw error;
+    }
+  };
+
+  const register = async (email: string, password: string, name?: string) => {
+    dispatch({ type: 'REGISTER_START' });
+
+    try {
+      // For mock implementation, we'll simulate a successful registration
+      // In a real app, you would call the actual API
+      const mockToken = 'mock-jwt-token-for-testing';
+      const mockUser = {
+        id: '1',
+        email: email,
+        name: name || email.split('@')[0] // Use name if provided, otherwise part of email
+      };
+
+      // Store the token in the API client
+      apiClient.setAuthToken(mockToken);
+
+      dispatch({
+        type: 'REGISTER_SUCCESS',
+        payload: { user: mockUser, token: mockToken }
+      });
+    } catch (error: any) {
+      const errorMessage = error.message || 'Registration failed';
+      dispatch({
+        type: 'REGISTER_FAILURE',
+        payload: errorMessage
+      });
+      throw error;
+    }
+  };
+
+  const logout = () => {
+    // Clear tokens from API client and storage
+    apiClient.removeAuthToken();
+    
+    dispatch({ type: 'LOGOUT' });
+  };
+
+  const refreshToken = async () => {
+    try {
+      // This would call the refresh endpoint
+      // const response = await authService.refreshToken();
+      // if (response.status === 200) {
+      //   const { token, user } = response.data;
+      //   apiClient.setAuthToken(token);
+      //   dispatch({ 
+      //     type: 'LOGIN_SUCCESS', 
+      //     payload: { user, token } 
+      //   });
+      // }
+    } catch (error) {
+      logout(); // If refresh fails, log out the user
+    }
+  };
+
+  const value = {
+    ...state,
+    login,
+    register,
+    logout,
+    refreshToken,
+    authenticateWithToken,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+</file>
+
+<file path="frontend/src/contexts/ApiContext.tsx">
+import React, { createContext, useContext, useState } from 'react';
+import { ApiClient } from '../lib/api/client';
+import { AuthService } from '../lib/api/auth';
+
+interface ApiContextType {
+  apiClient: ApiClient;
+  authService: AuthService;
+}
+
+const ApiContext = createContext<ApiContextType | undefined>(undefined);
+
+interface ApiProviderProps {
+  children: React.ReactNode;
+}
+
+export const ApiProvider: React.FC<ApiProviderProps> = ({ children }) => {
+  const [apiClient] = useState(() => {
+    const client = new ApiClient({
+      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+      timeout: 10000,
+    });
+    return client;
+  });
+
+  const [authService] = useState(() => new AuthService(apiClient));
+
+  return (
+    <ApiContext.Provider value={{ apiClient, authService }}>
+      {children}
+    </ApiContext.Provider>
+  );
+};
+
+export const useApiClient = (): ApiContextType => {
+  const context = useContext(ApiContext);
+  if (context === undefined) {
+    throw new Error('useApiClient must be used within an ApiProvider');
+  }
+  return context;
+};
+</file>
+
+<file path="frontend/src/hooks/useTelegramWebApp.ts">
+import { useEffect, useState } from 'react';
+
+interface TelegramUser {
+  id: string;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+}
+
+export const useTelegramWebApp = () => {
+  const [isTelegram, setIsTelegram] = useState(false);
+  const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    // Check if we're in a Telegram Web App environment
+    if (typeof (window as any).Telegram !== 'undefined' && (window as any).Telegram.WebApp) {
+      const webApp = (window as any).Telegram.WebApp;
+      
+      // Initialize the Telegram Web App
+      webApp.ready();
+      
+      // Get the authentication data
+      const authData = webApp.initData || webApp.initDataUnsafe;
+      
+      if (authData) {
+        // Parse the authentication data
+        const authParams = new URLSearchParams(authData);
+        const user: TelegramUser = {
+          id: authParams.get('id') || '',
+          first_name: authParams.get('first_name') || '',
+          last_name: authParams.get('last_name') || '',
+          username: authParams.get('username') || '',
+          photo_url: authParams.get('photo_url') || '',
+          auth_date: parseInt(authParams.get('auth_date') || '0'),
+          hash: authParams.get('hash') || ''
+        };
+
+        // Verify that we have the required fields
+        if (user.id && user.hash) {
+          setIsTelegram(true);
+          setTelegramUser(user);
+        }
+      }
+    }
+    
+    setIsReady(true);
+  }, []);
+
+  return { isTelegram, telegramUser, isReady };
+};
+</file>
+
+<file path="frontend/src/lib/api/auth.ts">
+import { ApiClient } from './client';
+import type { ApiResponse } from './client';
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  name?: string;
+}
+
+export interface RegisterResponse {
+  id: string;
+  email: string;
+  name?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user: {
+    id: string;
+    email: string;
+    name?: string;
+  };
+}
+
+export interface OAuthResponse {
+  token: string;
+  user: {
+    id: string;
+    email: string;
+  };
+}
+
+export interface TelegramAuthRequest {
+  id: string;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+}
+
+export interface TelegramAuthResponse {
+  token: string;
+  user: {
+    id: string;
+    email?: string;
+    name: string;
+  };
+}
+
+export class AuthService {
+  private apiClient: ApiClient;
+
+  constructor(apiClient: ApiClient) {
+    this.apiClient = apiClient;
+  }
+
+  getApiClient(): ApiClient {
+    return this.apiClient;
+  }
+
+  async register(data: RegisterRequest): Promise<ApiResponse<RegisterResponse>> {
+    return this.apiClient.post('/auth/register', data);
+  }
+
+  async login(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
+    return this.apiClient.post('/auth/login', data);
+  }
+
+  async googleAuth(token: string): Promise<ApiResponse<OAuthResponse>> {
+    return this.apiClient.post('/auth/google', { token });
+  }
+
+  async githubAuth(code: string): Promise<ApiResponse<OAuthResponse>> {
+    return this.apiClient.post('/auth/github', { code });
+  }
+
+  async telegramAuth(data: TelegramAuthRequest): Promise<ApiResponse<TelegramAuthResponse>> {
+    return this.apiClient.post('/auth/telegram', data);
+  }
+
+  async logout(): Promise<void> {
+    this.apiClient.removeAuthToken();
+  }
+
+  async refreshToken(): Promise<ApiResponse<LoginResponse>> {
+    return this.apiClient.post('/auth/refresh');
+  }
+}
+</file>
+
+<file path="frontend/src/lib/api/client.ts">
+import axios from 'axios';
+import type { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+
+export interface ApiConfig {
+  baseURL: string;
+  timeout?: number;
+  headers?: Record<string, string>;
+}
+
+export interface ApiResponse<T = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: any;
+}
+
+export class ApiClient {
+  private axiosInstance: any; // Using any to allow for axios instance with interceptors
+  private config: ApiConfig;
+  private isRefreshing = false;
+  private failedQueue: Array<{resolve: (value: any) => void, reject: (value: any) => void}> = [];
+
+  constructor(_config: ApiConfig) {
+    this.config = _config;
+    this.axiosInstance = axios.create({
+      baseURL: _config.baseURL,
+      timeout: _config.timeout || 10000,
+      headers: {
+        'Content-Type': 'application/json',
+        ..._config.headers,
+      },
+    });
+
+    // Add request interceptor
+    this.axiosInstance.interceptors.request.use(
+      this.handleRequest.bind(this),
+      this.handleRequestError.bind(this)
+    );
+
+    // Add response interceptor
+    this.axiosInstance.interceptors.response.use(
+      this.handleResponse.bind(this),
+      this.handleResponseError.bind(this)
+    );
+  }
+
+  private handleRequest(_config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
+    // Add auth token if available
+    const token = this.getToken();
+    if (token && _config.headers) {
+      _config.headers.Authorization = `Bearer ${token}`;
+    }
+    return _config;
+  }
+
+  private handleRequestError(error: any): Promise<any> {
+    return Promise.reject(error);
+  }
+
+  private handleResponse(response: AxiosResponse): AxiosResponse {
+    return response;
+  }
+
+  private async handleResponseError(error: any): Promise<any> {
+    const originalRequest = error.config;
+
+    // Handle specific error cases
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (this.isRefreshing) {
+        // If a token refresh is already in progress, queue this request
+        return new Promise((resolve, reject) => {
+          this.failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers['Authorization'] = 'Bearer ' + token;
+          return this.axiosInstance(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
+      originalRequest._retry = true;
+      this.isRefreshing = true;
+
+      const refreshToken = this.getRefreshToken();
+      if (!refreshToken) {
+        this.handleUnauthorized();
+        return Promise.reject(error);
+      }
+
+      try {
+        // Create a separate axios instance for refresh to avoid infinite loop
+        const refreshTokenInstance = axios.create({
+          baseURL: this.config.baseURL,
+          timeout: this.config.timeout || 10000,
+          headers: {
+            'Content-Type': 'application/json',
+            ...this.config.headers,
+          },
+        });
+
+        // Attempt to refresh the token
+        const response = await refreshTokenInstance.post('/auth/refresh', {
+          refreshToken: refreshToken
+        });
+
+        if (response.status === 200) {
+          const { token, refreshToken: newRefreshToken } = response.data;
+
+          // Update tokens in storage
+          this.setAuthToken(token);
+          this.setRefreshToken(newRefreshToken);
+
+          // Process the queue
+          this.processQueue(null, token);
+
+          // Retry the original request
+          originalRequest.headers['Authorization'] = 'Bearer ' + token;
+          return this.axiosInstance(originalRequest);
+        } else {
+          // Refresh failed
+          this.processQueue(response.data, null);
+          this.handleUnauthorized();
+          return Promise.reject(error);
+        }
+      } catch (refreshError: any) {
+        // Token refresh failed
+        this.processQueue(refreshError, null);
+        this.handleUnauthorized();
+        return Promise.reject(refreshError);
+      } finally {
+        this.isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+
+  private processQueue(error: any, token: string | null = null) {
+    this.failedQueue.forEach(({ resolve, reject }) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(token);
+      }
+    });
+
+    this.failedQueue = [];
+  }
+
+  private getToken(): string | null {
+    // Get token from localStorage or other storage
+    return localStorage.getItem('authToken');
+  }
+
+  private getRefreshToken(): string | null {
+    // Get refresh token from localStorage or other storage
+    return localStorage.getItem('refreshToken');
+  }
+
+  private setRefreshToken(token: string): void {
+    localStorage.setItem('refreshToken', token);
+  }
+
+  private handleUnauthorized(): void {
+    // Clear auth tokens and redirect to login
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
+    // Optionally redirect to login page
+    // window.location.href = '/login';
+  }
+
+  public async get<T>(url: string, _config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    const response = await this.axiosInstance.get(url, _config);
+    return {
+      data: response.data,
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    };
+  }
+
+  public async post<T>(url: string, data?: any, _config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    const response = await this.axiosInstance.post(url, data, _config);
+    return {
+      data: response.data,
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    };
+  }
+
+  public async put<T>(url: string, data?: any, _config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    const response = await this.axiosInstance.put(url, data, _config);
+    return {
+      data: response.data,
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    };
+  }
+
+  public async delete<T>(url: string, _config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    const response = await this.axiosInstance.delete(url, _config);
+    return {
+      data: response.data,
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    };
+  }
+
+  public async patch<T>(url: string, data?: any, _config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    const response = await this.axiosInstance.patch(url, data, _config);
+    return {
+      data: response.data,
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    };
+  }
+
+  public getConfig(): ApiConfig {
+    return this.config;
+  }
+
+  public setAuthToken(token: string): void {
+    localStorage.setItem('authToken', token);
+  }
+
+  public removeAuthToken(): void {
+    localStorage.removeItem('authToken');
+  }
+}
+</file>
+
+<file path="frontend/src/lib/validation/auth.ts">
+import { z } from 'zod';
+
+// Common email validation
+const emailSchema = z.string()
+  .min(1, 'Email is required')
+  .email('Email is invalid');
+
+// Common password validation
+const passwordSchema = z.string()
+  .min(1, 'Password is required')
+  .min(8, 'Password must be at least 8 characters');
+
+// Registration schema
+export const registrationSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+  name: z.string().optional(),
+});
+
+// Login schema
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+});
+
+// Type inference
+export type RegistrationData = z.infer<typeof registrationSchema>;
+export type LoginData = z.infer<typeof loginSchema>;
+</file>
+
+<file path="frontend/src/pages/GameDetailPage.tsx">
+import React from 'react';
+import { useParams } from 'react-router-dom';
+
+const GameDetailPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+
+  return (
+    <div>
+      <h1>Game Details: {id}</h1>
+      <p>Game details will be displayed here.</p>
+    </div>
+  );
+};
+
+export default GameDetailPage;
+</file>
+
+<file path="frontend/src/pages/GameListPage.tsx">
+import React from 'react';
+import GameList from '../components/games/GameList';
+import GameCreationModal from '../components/games/GameCreationModal';
+
+const GameListPage: React.FC = () => {
+  return (
+    <div>
+      <h1>My Games</h1>
+      <GameCreationModal />
+      <GameList />
+    </div>
+  );
+};
+
+export default GameListPage;
+</file>
+
+<file path="frontend/src/App.css">
+/* You can add any custom styles here that are not covered by Tailwind */
+/* Most of our styling will be done with Tailwind classes */
+
+/* Example of custom scrollbar if needed */
+/*
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+*/
+</file>
+
+<file path="frontend/src/App.tsx">
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ApiProvider } from './contexts/ApiContext';
+import { AuthProvider } from './contexts/auth/AuthContext';
+import { useApiClient } from './contexts/ApiContext';
+import LoginForm from './components/auth/LoginForm';
+import RegistrationForm from './components/auth/RegistrationForm';
+import GameListPage from './pages/GameListPage';
+import GameDetailPage from './pages/GameDetailPage';
+import ProtectedRoute from './components/routing/ProtectedRoute';
+import './App.css';
+
+// Wrapper component to access ApiClient in AuthProvider
+const AppContent: React.FC = () => {
+  const { apiClient, authService } = useApiClient();
+
+  return (
+    <AuthProvider apiClient={apiClient} authService={authService}>
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-gray-800 text-white p-4">
+          <h1 className="text-2xl font-bold text-center">Secret Santa</h1>
+        </header>
+        <main className="container mx-auto p-4 max-w-4xl">
+          <Routes>
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/register" element={<RegistrationForm />} />
+            <Route
+              path="/games"
+              element={
+                <ProtectedRoute>
+                  <GameListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/games/:id"
+              element={
+                <ProtectedRoute>
+                  <GameDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/games" replace />} />
+          </Routes>
+        </main>
+      </div>
+    </AuthProvider>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <ApiProvider>
+        <AppContent />
+      </ApiProvider>
+    </Router>
+  );
+}
+
+export default App;
+</file>
+
+<file path="frontend/src/index.css">
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add any custom styles here */
+</file>
+
+<file path="frontend/src/main.tsx">
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.tsx'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+</file>
+
+<file path="frontend/.gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+</file>
+
+<file path="frontend/eslint.config.js">
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+  },
+])
+</file>
+
+<file path="frontend/index.html">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+</file>
+
+<file path="frontend/package.json">
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "axios": "^1.13.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.11.0",
+    "zod": "^4.3.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/axios": "^0.9.36",
+    "@types/node": "^24.10.4",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "autoprefixer": "^10.4.23",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vite": "^7.2.4"
+  }
+}
+</file>
+
+<file path="frontend/postcss.config.js">
+export default {
+  plugins: {
+    '@tailwindcss/postcss': {},
+    autoprefixer: {},
+  },
+}
+</file>
+
+<file path="frontend/README.md">
+# React + TypeScript + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
+
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
+</file>
+
+<file path="frontend/tailwind.config.js">
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+</file>
+
+<file path="frontend/tsconfig.app.json">
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["src"]
+}
+</file>
+
+<file path="frontend/tsconfig.json">
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
+</file>
+
+<file path="frontend/tsconfig.node.json">
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+</file>
+
+<file path="frontend/vite.config.ts">
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react()],
+})
+</file>
+
+<file path=".gitignore">
+## A streamlined .gitignore for modern .NET projects
+## including temporary files, build results, and
+## files generated by popular .NET tools. If you are
+## developing with Visual Studio, the VS .gitignore
+## https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
+## has more thorough IDE-specific entries.
+##
+## Get latest from https://github.com/github/gitignore/blob/main/Dotnet.gitignore
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# NuGet Packages
+*.nupkg
+# NuGet Symbol Packages
+*.snupkg
+
+# Others
+~$*
+*~
+CodeCoverage/
+
+# MSBuild Binary and Structured Log
+*.binlog
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NUnit
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+</file>
+
+<file path="LICENSE">
+MIT License
+
+Copyright (c) 2025 Anisimov Gleb
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</file>
+
+<file path="plan.md">
+🎯 Frontend Tasks Only
+
+stackL react + ,mui/material-ui + tailwind + TS + vite
+
+Sprint 1
+#30 Frontend Auth System Integration
+
+· #31 Implement email/password registration form
+· #32 Implement email/password login form
+· #33 Add OAuth buttons (Google, GitHub)
+· #34 Implement OAuth popup flow
+· #35 Add Telegram Web App auth button
+· #36 Set up axios interceptors for token refresh
+· #37 Create auth store with user state management
+· #38 Implement protected routes
+
+---
+
+Sprint 2
+#68 Frontend Game Creation & List
+
+· #69 Create game creation modal/form
+· #70 Implement games list page
+· #71 Add game cards with status badges
+· #72 Filter games (created by me / participating)
+· #73 Display participant count
+· #74 Add navigation to game details
+
+#75 Frontend Game Detail Page
+
+· #76 Create game detail page layout
+· #77 Display game info and status
+· #78 Show participants list
+· #79 Add invite link with copy button
+· #80 Implement wish editor
+· #81 Add start game button (creator only)
+· #82 Add remove participant functionality (creator only)
+· #83 Show assignment after game starts
+
+---
+
+Sprint 3
+#101 Frontend SSE Integration
+
+· #102 Create SSE service with connection management
+· #103 Connect to SSE on game detail page
+· #104 Handle participant-joined events (update UI + notification)
+· #105 Handle participant-left events
+· #106 Handle game-started events
+· #107 Handle game-revealed events
+· #108 Implement automatic reconnection
+· #109 Clean up connections on page leave
+
+#123 Assignment Reveal Animation
+
+· #124 Design reveal animation (3 seconds)
+· #125 Implement animation component
+· #126 Show animation when game starts (if user is on page)
+· #127 Show static result if user returns after start
+· #128 Display recipient name and wish
+· #129 Add festive effects (snow, confetti)
+· #130 Test animation performance
+
+#131 Toast Notifications System
+
+· #132 Create toast notification component
+· #133 Implement notification store
+· #134 Add success/error/info/warning variants
+· #135 Add auto-dismiss functionality
+· #136 Integrate with all API calls
+· #137 Add SSE event notifications
+· #138 Style with animations
+
+#139 UI/UX Polish & Responsiveness
+
+· #140 Make all pages mobile responsive
+· #141 Add loading states to all buttons
+· #142 Implement skeleton loaders
+· #143 Add error boundaries
+· #144 Test on different screen sizes
+· #145 Add accessibility features (ARIA labels)
+· #146 Optimize images and assets
+· #147 Add favicon and meta tags
+
+---
+
+Sprint 5
+#148 Frontend Testing
+
+· #149 Set up Vitest for unit tests
+· #150 Write tests for auth components
+· #151 Write tests for game components
+· #152 Write tests for stores
+· #153 Add E2E tests with Playwright
+· #154 Test OAuth flow
+· #155 Test SSE connections
+
+#156 Frontend Performance
+
+· #157 Implement code splitting
+· #158 Add lazy loading for routes
+· #159 Optimize bundle size
+· #160 Add service worker for caching
+· #161 Optimize images (WebP, lazy load)
+· #162 Measure and improve Lighthouse score
+· #163 Add analytics (optional)
+
+---
+
+Sprint 6
+#164 User Acceptance Testing
+
+· #165 Create test scenarios
+· #166 Recruit beta testers
+· #167 Conduct UAT sessions
+· #168 Collect feedback
+· #169 Fix critical bugs
+· #170 Validate all user flows
+
+#171 Landing Page & Marketing
+
+· #172 Design landing page
+· #173 Add feature descriptions
+· #174 Add screenshots/demo
+· #175 Create tutorial/onboarding
+· #176 Add FAQ section
+· #177 Set up SEO metadata
+· #178 Add social media cards
+
+#179 Final Bug Fixes & Polish
+
+· #180 Fix critical frontend issues
+· #182 Fix all P0 bugs from UAT
+· #183 Fix critical backend issues
+· #184 Fix bot issues
+· #185 Perform final security review
+· #186 Final cross-browser testing
+</file>
+
+<file path="README.md">
+# secret-santa-II
+</file>
+
+</files>
