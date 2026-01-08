@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SecretSantaServer.Data;
+using SecretSantaServer.Hubs;
 using SecretSantaServer.Providers;
 using SecretSantaServer.Services;
 using SecretSantaServer.Utils;
@@ -73,5 +74,13 @@ app.UseAuthorization();
 
 app.UseHttpsRedirection();
 app.MapControllers();
+
+app.UseCors(policy=>policy
+    .WithOrigins(builder.Configuration["Frontend:Url"])
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials());
+
+app.MapHub<GameHub>("/hubs/game");
 
 app.Run();
