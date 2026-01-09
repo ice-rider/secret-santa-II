@@ -22,8 +22,8 @@ public class AuthController : ControllerBase
         var result = await _authService.Register(request);
         if (result.IsSuccess)
         {
-            AddTokensToCookies(result.Value.RefreshToken, result.Value.AccessToken);
-            return CreatedAtRoute(result.Value.UserProfile.Id, result.Value.UserProfile);
+            AddRefreshTokenToCookies(result.Value.RefreshToken);
+            return CreatedAtRoute(result.Value.UserProfile.Id, result.Value);
         }
 
         return StatusCode(result.StatusCode, new { result.Error });
@@ -37,16 +37,21 @@ public class AuthController : ControllerBase
         var result = await _authService.Login(request);
         if (result.IsSuccess)
         {
-            AddTokensToCookies(result.Value.RefreshToken, result.Value.AccessToken);
-            return Ok(result.Value.UserProfile);
+            AddRefreshTokenToCookies(result.Value.RefreshToken);
+            return Ok(result.Value);
         }
         
         return StatusCode(result.StatusCode, new { result.Error });
     }
     
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout([FromBody] RefreshTokenDto refreshToken)
+    public async Task<IActionResult> Logout()
     {
+        if (!Request.Cookies.TryGetValue("refresh_token", out string refreshToken))
+        {
+            return Unauthorized("Refresh token missing");
+        }
+        
         var result = await _authService.Logout(refreshToken);
         if (result.IsSuccess)
             return Ok();
@@ -55,28 +60,25 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh")]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto refreshToken)
+    public async Task<IActionResult> RefreshToken()
     {
+        if (!Request.Cookies.TryGetValue("refresh_token", out string refreshToken))
+        {
+            return Unauthorized("Refresh token missing");
+        }
+        
         var result = await _authService.Refresh(refreshToken);
         if (result.IsSuccess)
         {
-            AddTokensToCookies(result.Value.RefreshToken, result.Value.AccessToken);
-            return Ok(result.Value!.UserProfile);
+            AddRefreshTokenToCookies(result.Value.RefreshToken);
+            return Ok(result.Value);
         }
         
         return StatusCode(result.StatusCode, new { result.Error });
     }
 
-    private void AddTokensToCookies(string refreshToken, string accessToken)
+    private void AddRefreshTokenToCookies(string refreshToken)
     {
-        Response.Cookies.Append("access_token", accessToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddMinutes(15)
-        });
-        
         Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
         {
             HttpOnly = true,

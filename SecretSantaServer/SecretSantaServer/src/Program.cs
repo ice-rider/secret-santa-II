@@ -66,12 +66,21 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseSession();
+app.UseHttpsRedirection();
+app.UseRouting();
+
+app.UseCors(policy=>policy
+    .WithOrigins(builder.Configuration["Frontend:Url"])
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials());
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseHttpsRedirection();
+app.UseSession();
+
 app.MapControllers();
+app.MapHub<GameHub>("/hubs/game");
 
 app.Run();

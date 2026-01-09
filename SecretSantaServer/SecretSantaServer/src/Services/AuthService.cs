@@ -59,9 +59,9 @@ public class AuthService : IAuthService
         return Result<UserAndTokensDto>.Success(result);
     }
 
-    public async Task<Result<bool>> Logout(RefreshTokenDto refreshToken)
+    public async Task<Result<bool>> Logout(string refreshToken)
     {
-        var foundedToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(r => r.Token == refreshToken.Token);
+        var foundedToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(r => r.Token == refreshToken);
         if (foundedToken == null)
             return Result<bool>.Failure("Refresh Token Not Found", StatusCodes.Status401Unauthorized);
 
@@ -71,10 +71,10 @@ public class AuthService : IAuthService
         return Result<bool>.Success(true);
     }
 
-    public async Task<Result<UserAndTokensDto>> Refresh(RefreshTokenDto oldRefreshToken)
+    public async Task<Result<UserAndTokensDto>> Refresh(string oldRefreshToken)
     {
         var foundedToken = await _dbContext.RefreshTokens
-            .FirstOrDefaultAsync(r => r.Token == oldRefreshToken.Token);
+            .FirstOrDefaultAsync(r => r.Token == oldRefreshToken);
         if (foundedToken == null || foundedToken.ExpiresAt < DateTime.UtcNow)
             return Result<UserAndTokensDto>.Failure("Invalid Refresh Token", StatusCodes.Status401Unauthorized);
 
@@ -83,8 +83,7 @@ public class AuthService : IAuthService
         var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == foundedToken.UserId);
 
         var result = new UserAndTokensDto(new UserProfileDto(user!), refreshToken.Token, accessToken);
-        _dbContext.RefreshTokens.Remove(foundedToken);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.RefreshTokens.Where(r=>r.Token==oldRefreshToken).ExecuteDeleteAsync();
 
         return Result<UserAndTokensDto>.Success(result);
     }
