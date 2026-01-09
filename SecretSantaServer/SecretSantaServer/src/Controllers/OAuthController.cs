@@ -133,14 +133,6 @@ public class OAuthController : ControllerBase
     
     private string GetRedirectUrlWithUserInfo(UserAndTokensDto userInfo)
     {
-        Response.Cookies.Append("access_token", userInfo.AccessToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddMinutes(15)
-        });
-        
         Response.Cookies.Append("refresh_token", userInfo.RefreshToken, new CookieOptions
         {
             HttpOnly = true,
