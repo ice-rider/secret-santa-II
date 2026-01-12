@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SecretSantaServer.Data;
+using SecretSantaServer.Hubs;
 using SecretSantaServer.Providers;
 using SecretSantaServer.Services;
 using SecretSantaServer.Utils;
@@ -25,7 +26,9 @@ builder.Services.AddSignalR();
 
 var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
 builder.Services.AddDbContext<IDbContext, ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+    options.UseNpgsql(connectionString)
+        .UseSnakeCaseNamingConvention()
+        .ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
 );
 
 builder.Services.AddDistributedMemoryCache();
@@ -60,6 +63,21 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    try
+    {
+        context.Database.Migrate();
+        Console.WriteLine("Database migration applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An error occurred while migrating the database: {ex}");
+        throw;
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {
