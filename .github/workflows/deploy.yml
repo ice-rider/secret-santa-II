@@ -1,0 +1,109 @@
+name: Build and Push Docker Images to GHCR
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      nginx: ${{ steps.filter.outputs.nginx }}
+      docker_compose: ${{ steps.filter.outputs.docker_compose }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Filter changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend: ./secret-santa/**
+            backend: ./SecretSantaServer/**
+            nginx: ./nginx*.conf ./nginx*.Dockerfile
+            docker_compose: ./docker-compose.yml ./docker-bake.hcl
+
+  build-and-push:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        component: ['frontend', 'backend', 'nginx']
+    env:
+      # Передаём флаги через env для удобства
+      CHANGED_FRONTEND: ${{ needs.detect-changes.outputs.frontend }}
+      CHANGED_BACKEND: ${{ needs.detect-changes.outputs.backend }}
+      CHANGED_NGINX: ${{ needs.detect-changes.outputs.nginx }}
+      CHANGED_DOCKER_COMPOSE: ${{ needs.detect-changes.outputs.docker_compose }}
+    steps:
+      - name: Check if component changed
+        id: check
+        run: |
+          case "${{ matrix.component }}" in
+            frontend)  changed="${{ env.CHANGED_FRONTEND }}" ;;
+            backend)   changed="${{ env.CHANGED_BACKEND }}" ;;
+            nginx)     changed="${{ env.CHANGED_NGINX }}" ;;
+            *)         changed="false" ;;
+          esac
+          
+          if [ "$changed" != "true" ] && [ "${{ matrix.component }}" != "docker_compose" ]; then
+            echo "No changes detected in ${{ matrix.component }}. Skipping build."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          elif [ "${{ matrix.component }}" = "docker_compose" ]; then
+            # Docker compose может измениться независимо от других компонентов
+            if [ "${{ env.CHANGED_DOCKER_COMPOSE }}" = "true" ]; then
+              echo "Changes detected in docker compose. Proceeding with build."
+              echo "skip=false" >> $GITHUB_OUTPUT
+            else
+              echo "No changes detected in docker compose. Skipping build."
+              echo "skip=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Changes detected in ${{ matrix.component }}. Proceeding with build."
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout code
+        if: steps.check.outputs.skip != 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        if: steps.check.outputs.skip != 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          echo "$GHCR_PASSWORD" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+        env:
+          GHCR_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker image
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          case "${{ matrix.component }}" in
+            frontend)
+              cd secret-santa
+              IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/secret-santa-frontend"
+              ;;
+            backend)
+              cd SecretSantaServer/SecretSantaServer
+              IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/secret-santa-backend"
+              ;;
+            nginx)
+              cd .
+              IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/secret-santa-nginx"
+              ;;
+          esac
+          
+          SHA_TAG="${{ github.sha }}"
+          docker build -t "$IMAGE_NAME:$SHA_TAG" . --file "${{ matrix.component == 'frontend' && 'Dockerfile' || matrix.component == 'backend' && 'Dockerfile' || matrix.component == 'nginx' && 'nginx-fixed.Dockerfile' }}"
+          docker push "$IMAGE_NAME:$SHA_TAG"
+          docker tag "$IMAGE_NAME:$SHA_TAG" "$IMAGE_NAME:latest"
+          docker push "$IMAGE_NAME:latest"
