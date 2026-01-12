@@ -17,7 +17,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let apiUrl = import.meta.env.VITE_API_BASE_URL;
     if (!apiUrl) {
       apiUrl = '/api';
-      console.warning("FRONTEND MISSED ENV VAR 'VITE_API_BASE_URL' CHECK YOUR ENVIRONMENT. (use '/api' as base url)")
+      console.warn("FRONTEND MISSED ENV VAR 'VITE_API_BASE_URL' CHECK YOUR ENVIRONMENT. (use '/api' as base url)")
     }
     return new ApiClient({
       baseURL: apiUrl,
