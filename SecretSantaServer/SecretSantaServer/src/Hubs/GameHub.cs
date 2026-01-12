@@ -15,7 +15,7 @@ public class GameHub : Hub
     public GameHub(IGameService gameService, IConfiguration configuration)
     {
         _gameService = gameService;
-        _gameStatusUpdateMethod = configuration["Fronted:GameStatusUpdateMethod"]!;
+        _gameStatusUpdateMethod = configuration["Frontend:GameStatusUpdatedMethod"]!;
     }
 
     public async Task JoinGame(int gameId)
