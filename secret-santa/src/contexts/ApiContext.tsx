@@ -14,10 +14,10 @@ const ApiContext = createContext<ApiContextType | undefined>(undefined);
 
 export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const apiClient = useMemo(() => {
-    let apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-    // Add /api to the end of the URL if it's not already there and it's not a relative path
-    if (!apiUrl.endsWith('/api') && !apiUrl.startsWith('/')) {
-      apiUrl = apiUrl.replace(/\/$/, '') + '/api';
+    let apiUrl = import.meta.env.VITE_API_BASE_URL;
+    if (!apiUrl) {
+      apiUrl = '/api';
+      console.warning("FRONTEND MISSED ENV VAR 'VITE_API_BASE_URL' CHECK YOUR ENVIRONMENT. (use '/api' as base url)")
     }
     return new ApiClient({
       baseURL: apiUrl,
