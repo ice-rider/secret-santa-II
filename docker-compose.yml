@@ -58,7 +58,9 @@ services:
 
   # Frontend web application
   frontend:
-    image: ghcr.io/ice-rider/secret-santa-backend
+    image: ghcr.io/ice-rider/secret-santa-frontend
+    
+
     container_name: secret-santa-frontend
     restart: always
     expose:
