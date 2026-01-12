@@ -32,9 +32,7 @@ services:
       retries: 5
 
   backend:
-    build:
-      context: ./SecretSantaServer/SecretSantaServer
-      dockerfile: Dockerfile
+    image: ghcr.io/ice-rider/secret-santa-backend
     container_name: server
     restart: always
     expose:
@@ -60,21 +58,11 @@ services:
 
   # Frontend web application
   frontend:
-    build:
-      context: ./secret-santa
-      dockerfile: Dockerfile
-      args:
-        - VITE_API_BASE_URL=/api
-        - VITE_SIGNALR_HUB_URL=/hubs/game
-        - VITE_OAUTH_REDIRECT_URI=/auth/callback
+    image: ghcr.io/ice-rider/secret-santa-frontend
     container_name: secret-santa-frontend
     restart: always
     expose:
       - 80
-    environment:
-      - VITE_API_BASE_URL=/api
-      - VITE_SIGNALR_HUB_URL=/hubs/game
-      - VITE_OAUTH_REDIRECT_URI=/auth/callback
     depends_on:
       - backend
     networks:
