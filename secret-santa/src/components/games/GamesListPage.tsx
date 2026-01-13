@@ -7,6 +7,7 @@ import {
   Grid,
   CircularProgress,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { useApiClient } from '../../contexts/ApiContext';
 import { useNotification } from '../../contexts/NotificationContext';
 import GameCard from './GameCard';
@@ -14,6 +15,7 @@ import GameCreationModal from './GameCreationModal';
 import { GameDto } from '../../lib/api/game';
 
 const GamesListPage: React.FC = () => {
+  const navigate = useNavigate();
   const { gameService } = useApiClient();
   const { showNotification } = useNotification();
   const [games, setGames] = useState<GameDto[]>([]);
@@ -31,6 +33,11 @@ const GamesListPage: React.FC = () => {
     }
   };
 
+  const handleGameCreated = (gameId: number) => {
+    // Navigate to the newly created game page
+    navigate(`/games/${gameId}`);
+  };
+
   useEffect(() => {
     fetchGames();
   }, []);
@@ -40,7 +47,7 @@ const GamesListPage: React.FC = () => {
       <Box sx={{ my: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4">Your Secret Santa Games</Typography>
-          <GameCreationModal onSuccess={fetchGames} />
+          <GameCreationModal onSuccess={handleGameCreated} />
         </Box>
 
         {loading ? (
@@ -63,7 +70,7 @@ const GamesListPage: React.FC = () => {
             <Typography variant="body1" color="text.secondary" sx={{ mt: 1, mb: 3 }}>
               Create your first game or ask for a game code to join
             </Typography>
-            <GameCreationModal onSuccess={fetchGames} />
+            <GameCreationModal onSuccess={handleGameCreated} />
           </Box>
         )}
       </Box>

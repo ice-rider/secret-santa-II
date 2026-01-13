@@ -10,8 +10,10 @@ import {
   CircularProgress,
   Tabs,
   Tab,
+  IconButton,
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
+import { CopyAll as CopyIcon } from '@mui/icons-material';
 import { GameDto, GameStatus } from '../../lib/api/game';
 import { useApiClient } from '../../contexts/ApiContext';
 import { useNotification } from '../../contexts/NotificationContext';
@@ -103,6 +105,18 @@ const GamePage: React.FC = () => {
     }
   };
 
+  const copyGameLink = () => {
+    const gameLink = `${window.location.origin}/join-game?code=${game?.code}`;
+    navigator.clipboard.writeText(gameLink)
+      .then(() => {
+        showNotification('Game link copied to clipboard!', 'success');
+      })
+      .catch(err => {
+        showNotification('Failed to copy game link', 'error');
+        console.error('Failed to copy: ', err);
+      });
+  };
+
   useEffect(() => {
     if (isNaN(gameId)) {
       navigate('/');
@@ -190,6 +204,16 @@ const GamePage: React.FC = () => {
               <Typography variant="body2">
                 <strong>Participants:</strong> {game.members?.length || 0}
               </Typography>
+              <Box sx={{ mt: 1 }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<CopyIcon />}
+                  onClick={copyGameLink}
+                >
+                  Copy Game Link
+                </Button>
+              </Box>
             </Grid>
             <Grid item xs={12} md={6}>
               {isCurrentUserAdmin && (

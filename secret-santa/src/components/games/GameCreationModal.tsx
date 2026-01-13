@@ -15,8 +15,10 @@ import {
 import { useApiClient } from '../../contexts/ApiContext';
 import { useNotification } from '../../contexts/NotificationContext';
 
+import { useNavigate } from 'react-router-dom';
+
 interface GameCreationModalProps {
-  onSuccess?: () => void;
+  onSuccess?: (gameId: number) => void;
 }
 
 const GameCreationModal: React.FC<GameCreationModalProps> = ({ onSuccess }) => {
@@ -59,14 +61,14 @@ const GameCreationModal: React.FC<GameCreationModalProps> = ({ onSuccess }) => {
 
     setLoading(true);
     try {
-      await gameService.createGame({
+      const response = await gameService.createGame({
         title: formData.title,
         description: formData.description || undefined,
         isAdminParticipating: formData.isAdminParticipating,
       });
       showNotification('Game created successfully!', 'success');
       setOpen(false);
-      if (onSuccess) onSuccess();
+      if (onSuccess) onSuccess(response.data.id);
     } catch (error: any) {
       showNotification(error.response?.data?.error || 'Failed to create game', 'error');
     } finally {

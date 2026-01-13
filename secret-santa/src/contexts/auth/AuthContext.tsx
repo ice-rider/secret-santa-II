@@ -5,8 +5,8 @@ import { ApiClient } from '../../lib/api/client';
 import { AuthService } from '../../lib/api/auth';
 
 export interface User {
-  id: number;
-  name: string;
+  id?: number;
+  name?: string;
   email?: string;
   avatarUrl?: string;
 }
@@ -118,11 +118,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, apiClient,
 
   const checkAuth = async () => {
     try {
+      // Check if access token exists in localStorage
+      const accessToken = localStorage.getItem('accessToken');
+
+      if (!accessToken) {
+        // No access token, user is definitely not authenticated
+        dispatch({ type: 'LOGOUT' });
+        dispatch({ type: 'SET_LOADING', payload: false });
+        return;
+      }
+
       // Try to refresh token to check if user is authenticated
       const response = await authService.refreshToken();
 
-      if (response.data && response.data.userProfile) {
-        dispatch({ type: 'SET_USER', payload: response.data.userProfile });
+      if (response.data) {
+        // Successfully refreshed - update user info if available
+        if (response.data.userProfile) {
+          dispatch({ type: 'SET_USER', payload: response.data.userProfile });
+        } else {
+          // Even if userProfile is not in response, we're still authenticated
+          // since the refresh was successful
+          dispatch({
+            type: 'SET_USER',
+            payload: {
+              id: 0, // Placeholder ID since we don't have user data yet
+              name: 'Authenticated User' // Placeholder name
+            }
+          });
+        }
       } else {
         dispatch({ type: 'LOGOUT' });
       }
@@ -180,8 +203,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, apiClient,
   const refreshToken = async () => {
     try {
       const response = await authService.refreshToken();
-      if (response.data && response.data.userProfile) {
-        dispatch({ type: 'SET_USER', payload: response.data.userProfile });
+      if (response.data) {
+        // Successfully refreshed - update user info if available
+        if (response.data.userProfile) {
+          dispatch({ type: 'SET_USER', payload: response.data.userProfile });
+        } else {
+          // Even if userProfile is not in response, we're still authenticated
+          // since the refresh was successful
+          dispatch({
+            type: 'SET_USER',
+            payload: {
+              id: 0, // Placeholder ID since we don't have user data yet
+              name: 'Authenticated User' // Placeholder name
+            }
+          });
+        }
       }
     } catch (error) {
       dispatch({ type: 'LOGOUT' });
@@ -194,8 +230,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, apiClient,
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
       const response = await authService.refreshToken();
-      if (response.data && response.data.userProfile) {
-        dispatch({ type: 'SET_USER', payload: response.data.userProfile });
+      if (response.data) {
+        // Successfully refreshed - update user info if available
+        if (response.data.userProfile) {
+          dispatch({ type: 'SET_USER', payload: response.data.userProfile });
+        } else {
+          // Even if userProfile is not in response, we're still authenticated
+          // since the refresh was successful
+          dispatch({
+            type: 'SET_USER',
+            payload: {
+              id: 0, // Placeholder ID since we don't have user data yet
+              name: 'Authenticated User' // Placeholder name
+            }
+          });
+        }
       } else {
         dispatch({ type: 'LOGOUT' });
       }
