@@ -15,9 +15,6 @@ public class EmailValidateAttribute : ValidationAttribute
         if (email.Contains(' '))
             return new ValidationResult(ErrorMessage ?? "Email must not contain spaces.");
 
-        if (email.Any(c => c > 120))
-            return new ValidationResult(ErrorMessage ?? "Email must be up to 120 characters.");
-
         var atCount = email.Count(c => c == '@');
         if (atCount != 1)
             return new ValidationResult(ErrorMessage ?? "Email must contain exactly one '@' symbol.");
