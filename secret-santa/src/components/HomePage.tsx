@@ -69,20 +69,20 @@ const HomePage: React.FC = () => {
             {isAuthenticated ? (
               <>
                 <Button
-                  variant="contained"
-                  size="large"
-                  onClick={handleCreateGame}
-                  sx={{ minWidth: 150 }}
-                >
-                  Create Game
-                </Button>
-                <Button
                   variant="outlined"
                   size="large"
                   onClick={handleJoinGame}
                   sx={{ minWidth: 150 }}
                 >
                   Join Game
+                </Button>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={handleCreateGame}
+                  sx={{ minWidth: 150 }}
+                >
+                  My Games
                 </Button>
               </>
             ) : (
