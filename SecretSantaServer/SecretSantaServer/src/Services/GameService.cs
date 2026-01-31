@@ -31,7 +31,7 @@ public class GameService : IGameService
 
     public async Task<Result<GameDto>> CreateGame(int adminId, CreateGameRequest request)
     {
-        if (!_dbContext.Users.Any(u => u.Id == adminId))
+        if (!await _dbContext.Users.AnyAsync(u => u.Id == adminId))
             return Result<GameDto>.Failure("Admin user not found", StatusCodes.Status404NotFound);
         var uniqueCode = await GenerateUniqueGameCodeAsync();
 

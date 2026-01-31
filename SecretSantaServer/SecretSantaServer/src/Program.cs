@@ -100,5 +100,6 @@ app.UseSession();
 
 app.MapControllers();
 app.MapHub<GameHub>("/hubs/game");
+app.MapGet("/ping", () => Results.Ok("pong"));
 
 app.Run();

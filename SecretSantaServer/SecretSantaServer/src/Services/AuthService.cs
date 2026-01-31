@@ -54,7 +54,6 @@ public class AuthService : IAuthService
         var refreshToken = await CreateRefreshToken(foundedUser.Id);
         var accessToken = _accessTokenAccessTokenGenerator.GenerateJwtToken(foundedUser.Id.ToString(), Role.User);
         var result = new UserAndTokensDto(new UserProfileDto(foundedUser), refreshToken.Token, accessToken);
-        await _dbContext.SaveChangesAsync();
 
         return Result<UserAndTokensDto>.Success(result);
     }
