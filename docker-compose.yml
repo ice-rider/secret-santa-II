@@ -40,9 +40,8 @@ services:
     env_file:
       - .env
     environment:
-      # Database connection
       - ConnectionStrings__PostgresConnection=Host=postgres;Port=5432;Database=secret_santa;Username=santa_clause;Password=LF=&@q.]N&ECt>-|Wj)l>x.#+WUb2Jymp1H0KIDyH6d&!7Byawk]eMIxX;Maximum Pool Size=500
-      # Frontend configuration
+      - ZipkinEndpoint=http://zipkin:9411/api/v2/spans
       - Frontend__Url=http://localhost
       - Frontend__AuthCallback=http://localhost
       - Frontend__GameStatusUpdatedMethod=GameStatus
@@ -83,6 +82,12 @@ services:
     depends_on:
       - backend
       - frontend
+    networks:
+      - secret-santa-network
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: secret-santa-telemetry
+    restart: always
     networks:
       - secret-santa-network
 

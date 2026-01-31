@@ -2,14 +2,16 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using SecretSantaServer.Data;
 using SecretSantaServer.Hubs;
 using SecretSantaServer.Providers;
 using SecretSantaServer.Services;
 using SecretSantaServer.Utils;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
@@ -24,11 +26,26 @@ builder.Services.AddHttpClient<GithubOAuthClient>();
 
 builder.Services.AddSignalR();
 
+var zipkinEndpoint = builder.Configuration["ZipkinEndpoint"];
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("SecretSanta"))
+    .WithTracing(tracerProviderBuilder =>
+        tracerProviderBuilder
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddNpgsql()
+            .AddZipkinExporter(o =>
+            {
+                o.Endpoint = new Uri(zipkinEndpoint);
+            })
+    );
+
 var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
 builder.Services.AddDbContext<IDbContext, ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
         .UseSnakeCaseNamingConvention()
-        .ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
+        .ConfigureWarnings(warnings =>
+            warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
 );
 
 builder.Services.AddDistributedMemoryCache();
@@ -80,7 +97,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseCors(policy=>policy
+app.UseCors(policy => policy
     .WithOrigins(builder.Configuration["Frontend:Url"])
     .AllowAnyMethod()
     .AllowAnyHeader()
