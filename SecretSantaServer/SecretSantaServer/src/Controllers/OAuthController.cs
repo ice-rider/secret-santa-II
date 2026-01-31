@@ -25,8 +25,7 @@ public class OAuthController : ControllerBase
     [HttpGet("google")]
     public async Task<IActionResult> LoginByGoogle()
     {
-        var state = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
-        HttpContext.Session.SetString("OAuthState", state);
+        var state = AddStateToCookies();
 
         var clientId = _config["OAuth:Google:ClientId"]!;
         var redirectUri = $"{Request.Scheme}://{Request.Host}/api/oauth/google/callback";
@@ -49,8 +48,7 @@ public class OAuthController : ControllerBase
     [HttpGet("github")]
     public async Task<IActionResult> LoginByGithub()
     {
-        var state = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
-        HttpContext.Session.SetString("OAuthState", state);
+        var state = AddStateToCookies();
 
         var clientId = _config["OAuth:Github:ClientId"]!;
         var redirectUri = $"{Request.Scheme}://{Request.Host}/api/oauth/github/callback";
@@ -65,6 +63,19 @@ public class OAuthController : ControllerBase
         };
 
         return Redirect(QueryHelpers.AddQueryString(GithubOAuthUri, queryParams));
+    }
+
+    private string AddStateToCookies()
+    {
+        var state = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        Response.Cookies.Append("OAuthState", state, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddMinutes(5)
+        });
+        return state;
     }
 
     [HttpGet("google/callback")]
@@ -111,16 +122,17 @@ public class OAuthController : ControllerBase
 
     private IActionResult? CheckOAuthParameters(string? code, string? state, string? error)
     {
-        var expectedState = HttpContext.Session.GetString("OAuthState");
-        HttpContext.Session.Remove("OAuthState");
-
+        if(!Request.Cookies.TryGetValue("OAuthState", out var expectedState))
+            return Redirect(GetRedirectUrlWithError("Missing state"));
+        Response.Cookies.Delete("OAuthState");
+        
         if (error != null)
             return Redirect(GetRedirectUrlWithError(error));
         
         if(string.IsNullOrEmpty(code))
             return Redirect(GetRedirectUrlWithError("Missing auth code"));
 
-        if (string.IsNullOrEmpty(expectedState) || state != expectedState)
+        if (state != expectedState)
             return Redirect(GetRedirectUrlWithError("Invalid or missing state"));
 
         return null;

@@ -32,13 +32,6 @@ builder.Services.AddDbContext<IDbContext, ApplicationDbContext>(options =>
 );
 
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(10);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-});
 
 builder.Services.AddAuthentication(options =>
     {
@@ -95,8 +88,6 @@ app.UseCors(policy=>policy
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseSession();
 
 app.MapControllers();
 app.MapHub<GameHub>("/hubs/game");

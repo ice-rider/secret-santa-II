@@ -90,6 +90,7 @@ async function makeAuthenticatedRequest(userData, method, endpoint, data = null)
         };
         
         let response;
+        //console.log(response);
         if (method === 'GET') {
             response = await axios.get(`${baseUrl}${endpoint}`, { headers, timeout: 15000 });
         } else if (method === 'POST') {
