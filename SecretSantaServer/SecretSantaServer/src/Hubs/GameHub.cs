@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using SecretSantaServer.DTOs;
+using SecretSantaServer.Enums;
 using SecretSantaServer.Services;
 
 namespace SecretSantaServer.Hubs;

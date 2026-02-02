@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretSantaServer.DTOs;
 using SecretSantaServer.Services;
@@ -45,14 +47,16 @@ public class AuthController : ControllerBase
     }
     
     [HttpPost("logout")]
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
+        var userId = GetUserId();
         if (!Request.Cookies.TryGetValue("refresh_token", out string refreshToken))
         {
             return Unauthorized("Refresh token missing");
         }
         
-        var result = await _authService.Logout(refreshToken);
+        var result = await _authService.Logout(userId, refreshToken);
         if (result.IsSuccess)
             return Ok();
 
@@ -60,14 +64,16 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh")]
+    [Authorize]
     public async Task<IActionResult> RefreshToken()
     {
+        var userId = GetUserId();
         if (!Request.Cookies.TryGetValue("refresh_token", out string refreshToken))
         {
             return Unauthorized("Refresh token missing");
         }
         
-        var result = await _authService.Refresh(refreshToken);
+        var result = await _authService.Refresh(userId, refreshToken);
         if (result.IsSuccess)
         {
             AddRefreshTokenToCookies(result.Value.RefreshToken);
@@ -86,5 +92,11 @@ public class AuthController : ControllerBase
             SameSite = SameSiteMode.Strict,
             Expires = DateTimeOffset.UtcNow.AddDays(30)
         });
+    }
+    
+    private int GetUserId()
+    {
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        return userId;
     }
 }

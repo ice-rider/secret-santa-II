@@ -11,7 +11,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Game> Games { get; set; }
     public DbSet<GameMember> GameMembers { get; set; }
     public DbSet<Assignment> Assignments { get; set; }
-    public DbSet<RefreshToken> RefreshTokens { get; set; }
     
     public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
@@ -98,12 +97,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             userAuthData.HasOne(x => x.User)
                 .WithOne(x => x.Credential)
                 .HasForeignKey<UserCredentials>(x => x.UserId);
-        });
-        modelBuilder.Entity<RefreshToken>(refreshToken =>
-        {
-            refreshToken.HasKey(x => x.Id);
-            
-            refreshToken.HasIndex(x=>x.Token).IsUnique();
         });
     }
 }

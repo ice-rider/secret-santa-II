@@ -16,13 +16,18 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<IAccessTokenGenerator, JwtAccessTokenGenerator>();
+builder.Services.AddScoped<ICacheRepository, RedisCacheRepository>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IOAuthService, OAuthService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
 builder.Services.AddHttpClient<GoogleOAuthClient>();
+builder.Services.AddScoped<IOAuthClient>(sp => sp.GetRequiredService<GoogleOAuthClient>());
 builder.Services.AddHttpClient<GithubOAuthClient>();
+builder.Services.AddScoped<IOAuthClient>(sp => sp.GetRequiredService<GithubOAuthClient>());
 
 builder.Services.AddSignalR();
 
@@ -34,10 +39,7 @@ builder.Services.AddOpenTelemetry()
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
             .AddNpgsql()
-            .AddZipkinExporter(o =>
-            {
-                o.Endpoint = new Uri(zipkinEndpoint);
-            })
+            .AddZipkinExporter(o => { o.Endpoint = new Uri(zipkinEndpoint); })
     );
 
 var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
@@ -47,6 +49,12 @@ builder.Services.AddDbContext<IDbContext, ApplicationDbContext>(options =>
         .ConfigureWarnings(warnings =>
             warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
 );
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:Configuration"];
+    options.InstanceName = builder.Configuration["Redis:InstanceName"] + "_";
+});
 
 builder.Services.AddDistributedMemoryCache();
 

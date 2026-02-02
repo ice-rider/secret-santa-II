@@ -11,7 +11,6 @@ public interface IDbContext
     DbSet<Game> Games { get; set; }
     DbSet<GameMember> GameMembers { get; set; }
     DbSet<Assignment> Assignments { get; set; }
-    DbSet<RefreshToken> RefreshTokens { get; set; }
     Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitTransactionAsync(IDbContextTransaction transaction, CancellationToken cancellationToken = default);
     Task RollbackTransactionAsync(IDbContextTransaction transaction, CancellationToken cancellationToken = default);

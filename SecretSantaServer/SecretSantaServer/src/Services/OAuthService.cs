@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using SecretSantaServer.Data;
 using SecretSantaServer.DTOs;
 using SecretSantaServer.Enums;
@@ -14,46 +12,37 @@ public class OAuthService : IOAuthService
 {
     private readonly IDbContext _dbContext;
     private readonly IAccessTokenGenerator _accessTokenGenerator;
+    private readonly ICacheRepository _cacheRepository;
     private readonly Dictionary<OAuthProvider, IOAuthClient> _oAuthClients;
 
     public OAuthService(IDbContext dbContext, IAccessTokenGenerator accessTokenGenerator,
-        GoogleOAuthClient googleOAuthClient, GithubOAuthClient githubOAuthClient)
+        IEnumerable<IOAuthClient> oAuthClients, ICacheRepository cacheRepository)
     {
         _dbContext = dbContext;
         _accessTokenGenerator = accessTokenGenerator;
-        _oAuthClients = new();
-        _oAuthClients[OAuthProvider.Google] = googleOAuthClient;
-        _oAuthClients[OAuthProvider.Github] = githubOAuthClient;
+        _oAuthClients = oAuthClients.ToDictionary(x => x.Provider);
+        _cacheRepository = cacheRepository;
     }
 
     public async Task<Result<UserAndTokensDto>> OAuthLogin(string code, string state, OAuthProvider provider,
         string redirectUri)
     {
         var client = _oAuthClients[provider];
-        await using var transaction = await _dbContext.BeginTransactionAsync();
-        try
-        {
-            var userInfo = await client.GetUserInfoAsync(code, redirectUri);
-            if (userInfo.ProviderId == null)
-                return Result<UserAndTokensDto>.Failure("Provider Id Is Missing", StatusCodes.Status401Unauthorized);
+        var userInfo = await client.GetUserInfoAsync(code, redirectUri);
+        if (userInfo.ProviderId == null)
+            return Result<UserAndTokensDto>.Failure("Provider Id Is Missing", StatusCodes.Status401Unauthorized);
 
-            var userByProviderId = await _dbContext.Users.AsNoTracking()
-                .Include(x => x.Credential)
-                .FirstOrDefaultAsync(x =>
-                    provider == OAuthProvider.Google && x.Credential!.GoogleId == userInfo.ProviderId ||
-                    provider == OAuthProvider.Github && x.Credential!.GithubId == userInfo.ProviderId);
+        var userByProviderId = await _dbContext.Users.AsNoTracking()
+            .Include(x => x.Credential)
+            .FirstOrDefaultAsync(x =>
+                provider == OAuthProvider.Google && x.Credential!.GoogleId == userInfo.ProviderId ||
+                provider == OAuthProvider.Github && x.Credential!.GithubId == userInfo.ProviderId);
 
-            if (userByProviderId != null)
-                return await GetSuccessResult(userByProviderId, transaction);
+        if (userByProviderId != null)
+            return await GetSuccessResult(userByProviderId);
 
-            var (user, isNewUser) = await GetUserByEmail(provider, userInfo);
-            return await GetSuccessResult(user, transaction, isNewUser);
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            return Result<UserAndTokensDto>.Failure(ex.Message, StatusCodes.Status500InternalServerError);
-        }
+        var (user, isNewUser) = await GetUserByEmail(provider, userInfo);
+        return await GetSuccessResult(user, isNewUser);
     }
 
     private async Task<(User user, bool isNewUser)> GetUserByEmail(OAuthProvider provider, OAuthUserInfo userInfo)
@@ -86,12 +75,10 @@ public class OAuthService : IOAuthService
         return (user, isNewUser);
     }
 
-    private async Task<Result<UserAndTokensDto>> GetSuccessResult(User userByProviderId,
-        IDbContextTransaction transaction, bool isNewUser = false)
+    private async Task<Result<UserAndTokensDto>> GetSuccessResult(User userByProviderId, bool isNewUser = false)
     {
         var refreshTokenByProvider = await CreateRefreshToken(userByProviderId!.Id);
         var accessTokenByProvider = _accessTokenGenerator.GenerateJwtToken(userByProviderId.Id.ToString(), Role.User);
-        await transaction.CommitAsync();
 
         return Result<UserAndTokensDto>.Success(new UserAndTokensDto(new UserProfileDto(userByProviderId),
             refreshTokenByProvider.Token,
@@ -120,9 +107,8 @@ public class OAuthService : IOAuthService
 
     private async Task<RefreshToken> CreateRefreshToken(int userId)
     {
-        var refreshToken = RefreshTokenGenerator.GetRefreshToken(userId);
-        _dbContext.RefreshTokens.Add(refreshToken);
-        await _dbContext.SaveChangesAsync();
+        var refreshToken = new RefreshToken(userId, RefreshTokenGenerator.GenerateToken());
+        await _cacheRepository.SetAsync(userId, refreshToken, TimeSpan.FromDays(30));
         return refreshToken;
     }
 }

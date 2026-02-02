@@ -12,67 +12,33 @@ namespace SecretSantaServer.Services;
 
 public class GameService : IGameService
 {
+    #region fields
+
     private readonly ApplicationDbContext _dbContext;
     private readonly IHubContext<GameHub> _hubContext;
-    private const string CharsForCode = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private readonly ICacheRepository _cacheRepository;
+
     private readonly string _gameStatusUpdateMethod;
     private readonly string _userJoinMethod;
     private readonly string _userExitMethod;
 
+    private const string CharsForCode = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private readonly TimeSpan gameExpiration = TimeSpan.FromMinutes(60);
+
     public GameService(ApplicationDbContext dbContext, IHubContext<GameHub> hubContextContext,
-        IConfiguration configuration)
+        IConfiguration configuration, ICacheRepository cacheRepository)
     {
         _dbContext = dbContext;
         _hubContext = hubContextContext;
         _gameStatusUpdateMethod = configuration["Frontend:GameStatusUpdatedMethod"]!;
         _userJoinMethod = configuration["Frontend:UserJoinMethod"]!;
         _userExitMethod = configuration["Frontend:UserExitMethod"]!;
+        _cacheRepository = cacheRepository;
     }
 
-    public async Task<Result<GameDto>> CreateGame(int adminId, CreateGameRequest request)
-    {
-        if (!await _dbContext.Users.AnyAsync(u => u.Id == adminId))
-            return Result<GameDto>.Failure("Admin user not found", StatusCodes.Status404NotFound);
-        var uniqueCode = await GenerateUniqueGameCodeAsync();
+    #endregion
 
-        if (request.StartsAt < DateTime.UtcNow)
-            request.StartsAt = null;
-
-        var game = new Game
-        {
-            Title = request.Title,
-            Description = request.Description,
-            AdminId = adminId,
-            Code = uniqueCode,
-            IsAdminParticipating = request.IsAdminParticipating,
-            Status = GameStatus.Created,
-            ScheduledAt = request.StartsAt
-        };
-
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
-        try
-        {
-            _dbContext.Games.Add(game);
-            await _dbContext.SaveChangesAsync();
-
-            var adminMember = new GameMember
-            {
-                GameId = game.Id,
-                UserId = adminId
-            };
-            _dbContext.GameMembers.Add(adminMember);
-            await _dbContext.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-            return Result<GameDto>.Success(new GameDto(game), StatusCodes.Status201Created);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.InnerException);
-            await transaction.RollbackAsync();
-            return Result<GameDto>.Failure(ex.Message, StatusCodes.Status500InternalServerError);
-        }
-    }
+    #region getGame
 
     public async Task<Result<List<GameDto>>> GetUserGames(int id)
     {
@@ -95,27 +61,73 @@ public class GameService : IGameService
 
     public async Task<Result<GameDto>> GetGameById(int id)
     {
-        var game = await _dbContext.Games
-            .AsNoTracking()
-            .Include(g => g.GameMembers)
-            .ThenInclude(gm => gm.User)
-            .FirstOrDefaultAsync(g => g.Id == id);
+        var game = await _cacheRepository.GetAsync<Game>(id);
+        if (game == null)
+            game = await _dbContext.Games
+                .AsNoTracking()
+                .Include(g => g.GameMembers)
+                .ThenInclude(gm => gm.User)
+                .FirstOrDefaultAsync(g => g.Id == id);
 
         if (game == null)
             return Result<GameDto>.Failure("Game not found", StatusCodes.Status404NotFound);
-
+        await _cacheRepository.SetAsync(id, game, gameExpiration);
         return Result<GameDto>.Success(new GameDto(game));
     }
 
     public async Task<GameStatus?> GetGameStatusById(int id)
     {
-        var game = await _dbContext.Games.FirstOrDefaultAsync(x => x.Id == id);
-        return game?.Status;
+        var game = await _cacheRepository.GetAsync<Game>(id);
+        if (game == null)
+            game = await _dbContext.Games.FirstOrDefaultAsync(x => x.Id == id);
+        if (game == null)
+            return null;
+
+        await _cacheRepository.SetAsync(id, game, gameExpiration);
+        return game.Status;
+    }
+
+    #endregion
+
+    #region gameEdit
+
+    public async Task<Result<GameDto>> CreateGame(int adminId, CreateGameRequest request)
+    {
+        if (!await _dbContext.Users.AnyAsync(u => u.Id == adminId))
+            return Result<GameDto>.Failure("Admin user not found", StatusCodes.Status404NotFound);
+
+        if (request.StartsAt < DateTime.UtcNow)
+            request.StartsAt = null;
+
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            var code = GenerateGameCode(5+attempt);
+            var game = new Game
+            {
+                Title = request.Title,
+                Description = request.Description,
+                AdminId = adminId,
+                Code = code,
+                IsAdminParticipating = request.IsAdminParticipating,
+                Status = GameStatus.Created,
+                ScheduledAt = request.StartsAt
+            };
+
+            if (await TryAddGame(adminId, game)) continue;
+
+            await _cacheRepository.SetAsync(game.Id, game, gameExpiration);
+            return Result<GameDto>.Success(new GameDto(game), StatusCodes.Status201Created);
+        }
+
+        return Result<GameDto>.Failure("Failed to generate unique game code", StatusCodes.Status500InternalServerError);
     }
 
     public async Task<Result<GameDto>> UpdateGame(int gameId, UpdateGameRequest request, int userId)
     {
-        var game = await _dbContext.Games.FindAsync(gameId);
+        var game = await _cacheRepository.GetAsync<Game>(gameId);
+        if (game == null)
+            game = await _dbContext.Games.FindAsync(gameId);
+
         if (game == null)
             return Result<GameDto>.Failure("Game not found", StatusCodes.Status404NotFound);
         if (game.AdminId != userId)
@@ -134,6 +146,9 @@ public class GameService : IGameService
         game.ScheduledAt = request.StartsAt;
         game.IsAdminParticipating = request.IsAdminParticipating;
 
+        await _cacheRepository.RemoveAsync<Game>(game.Id);
+        await _cacheRepository.SetAsync(game.Id, game, gameExpiration);
+
         _dbContext.Games.Update(game);
         await _dbContext.SaveChangesAsync();
 
@@ -143,9 +158,11 @@ public class GameService : IGameService
     public async Task<Result<GameDto>> ChangeStatusGame(int gameId, int userId, GameStatus expectedStatus,
         GameStatus newStatus)
     {
-        var game = await _dbContext.Games
-            .Include(g => g.GameMembers)
-            .FirstOrDefaultAsync(g => g.Id == gameId);
+        var game = await _cacheRepository.GetAsync<Game>(gameId);
+        if (game == null)
+            game = await _dbContext.Games
+                .Include(g => g.GameMembers)
+                .FirstOrDefaultAsync(g => g.Id == gameId);
 
         if (game == null)
             return Result<GameDto>.Failure("Game not found", StatusCodes.Status404NotFound);
@@ -165,38 +182,15 @@ public class GameService : IGameService
                 return Result<GameDto>.Failure("Too few players to start", StatusCodes.Status400BadRequest);
         }
 
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
-        try
-        {
-            game.Status = newStatus;
-            if (newStatus == GameStatus.Started || newStatus == GameStatus.Cancelled)
-            {
-                game.Code = null;
-                game.ScheduledAt = null;
-            }
-
-            if (newStatus == GameStatus.Started)
-            {
-                StartGame(game);
-                game.StartedAt = DateTime.UtcNow;
-            }
-
-            if (newStatus == GameStatus.Finished)
-                game.FinishedAt = DateTime.UtcNow;
-            await _dbContext.SaveChangesAsync();
-
-            await _hubContext.Clients.Group($"game-{gameId}")
-                .SendAsync(_gameStatusUpdateMethod, new EventDto<int>($"game-{newStatus}", gameId));
-
-            await transaction.CommitAsync();
-            return Result<GameDto>.Success(new GameDto(game));
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            return Result<GameDto>.Failure(ex.Message, StatusCodes.Status500InternalServerError);
-        }
+        var result = await ProcessNewStatus(gameId, newStatus, game);
+        await _cacheRepository.RemoveAsync<Game>(game.Id);
+        await _cacheRepository.SetAsync(game.Id, result, gameExpiration);
+        return result;
     }
+
+    #endregion
+
+    #region members
 
     public async Task<Result<GameDto>> JoinGame(string gameCode, int userId, string? wishLetter)
     {
@@ -223,14 +217,17 @@ public class GameService : IGameService
 
         await _hubContext.Clients.Group($"game-{game.Id}")
             .SendAsync(_userJoinMethod, new EventDto<UserProfileDto>($"user-joined", new UserProfileDto(user)));
-
+        await _cacheRepository.RemoveAsync<Game>(game.Id);
+        await _cacheRepository.SetAsync(game.Id, game, gameExpiration);
         return Result<GameDto>.Success(new GameDto(game));
     }
 
     public async Task<Result<GameDto>> ExitGame(int gameId, int userId)
     {
-        var game = await _dbContext.Games.Include(x => x.GameMembers)
-            .FirstOrDefaultAsync(g => g.Id == gameId);
+        var game = await _cacheRepository.GetAsync<Game>(gameId);
+        if (game == null)
+            game = await _dbContext.Games.Include(x => x.GameMembers)
+                .FirstOrDefaultAsync(g => g.Id == gameId);
 
         if (game == null)
             return Result<GameDto>.Failure($"Game {gameId} not found", StatusCodes.Status404NotFound);
@@ -253,14 +250,18 @@ public class GameService : IGameService
         await _hubContext.Clients.Group($"game-{game.Id}")
             .SendAsync(_userExitMethod, new EventDto<UserProfileDto>($"user-exit", new UserProfileDto(user!)));
 
+        await _cacheRepository.RemoveAsync<Game>(game.Id);
+        await _cacheRepository.SetAsync(game.Id, game, gameExpiration);
         return Result<GameDto>.Success(new GameDto(game));
     }
 
     public async Task<Result<bool>> RemoveMember(int gameId, int memberId, int userId)
     {
-        var game = await _dbContext.Games
-            .Include(g => g.GameMembers)
-            .FirstOrDefaultAsync(g => g.Id == gameId);
+        var game = await _cacheRepository.GetAsync<Game>(gameId);
+        if (game == null)
+            game = await _dbContext.Games
+                .Include(g => g.GameMembers)
+                .FirstOrDefaultAsync(g => g.Id == gameId);
 
         if (game == null)
             return Result<bool>.Failure($"Game {gameId} not found", StatusCodes.Status404NotFound);
@@ -269,7 +270,7 @@ public class GameService : IGameService
                 StatusCodes.Status403Forbidden);
 
         if (game.Status != GameStatus.Created)
-            return Result<bool>.Failure("Cannot remove members after game has started",
+            return Result<bool>.Failure("Cannot remove member after game has started",
                 StatusCodes.Status400BadRequest);
 
         var member = game.GameMembers.FirstOrDefault(m => m.UserId == memberId);
@@ -278,33 +279,80 @@ public class GameService : IGameService
 
         if (game.AdminId == memberId)
             return Result<bool>.Failure("Cannot remove game admin", StatusCodes.Status400BadRequest);
-        if (game.Status != GameStatus.Created)
-            return Result<bool>.Failure("You can't remove a player after the game has started.",
-                StatusCodes.Status400BadRequest);
+
         _dbContext.GameMembers.Remove(member);
         await _dbContext.SaveChangesAsync();
+
+        await _cacheRepository.RemoveAsync<Game>(game.Id);
+        await _cacheRepository.SetAsync(game.Id, game, gameExpiration);
 
         return Result<bool>.Success(true);
     }
 
-    private async Task<string> GenerateUniqueGameCodeAsync(int length = 6)
+    #endregion
+
+    #region private
+
+    private async Task<bool> TryAddGame(int adminId, Game game)
     {
-        var random = new Random();
-        string code;
-
-        do
+        try
         {
-            code = new string(Enumerable.Repeat(CharsForCode, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        } while (await _dbContext.Games.AnyAsync(g => g.Code == code));
+            _dbContext.Games.Add(game);
+            await _dbContext.SaveChangesAsync();
 
-        return code;
+            var adminMember = new GameMember
+            {
+                GameId = game.Id,
+                UserId = adminId
+            };
+            _dbContext.GameMembers.Add(adminMember);
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+            when (ex.InnerException?.Message.Contains("UNIQUE") == true ||
+                  ex.InnerException?.Message.Contains("duplicate") == true)
+        {
+            _dbContext.Entry(game).State = EntityState.Detached;
+            return true;
+        }
+
+        return false;
+    }
+    
+    private async Task<Result<GameDto>> ProcessNewStatus(int gameId, GameStatus newStatus, Game game)
+    {
+        game.Status = newStatus;
+        if (newStatus is GameStatus.Started or GameStatus.Cancelled)
+        {
+            game.Code = null;
+            game.ScheduledAt = null;
+        }
+
+        if (newStatus == GameStatus.Started)
+        {
+            StartGame(game);
+            game.StartedAt = DateTime.UtcNow;
+        }
+
+        if (newStatus == GameStatus.Finished)
+            game.FinishedAt = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync();
+
+        await _hubContext.Clients.Group($"game-{gameId}")
+            .SendAsync(_gameStatusUpdateMethod, new EventDto<int>($"game-{newStatus}", gameId));
+
+        return Result<GameDto>.Success(new GameDto(game));
+    }
+
+    private string GenerateGameCode(int length = 6)
+    {
+        return new string(Enumerable.Repeat(CharsForCode[Random.Shared.Next(CharsForCode.Length)], length).ToArray());
     }
 
     private void StartGame(Game game)
     {
         var members = game.GameMembers.Where(x => x.UserId != game.AdminId || game.IsAdminParticipating)
-            .Select(x=>x.Id).ToList();
+            .Select(x => x.Id).ToList();
         members.Shuffle();
         for (var i = 1; i < members.Count; i++)
         {
@@ -312,19 +360,21 @@ public class GameService : IGameService
             {
                 GameId = game.Id,
                 RecipientId = members[i],
-                SantaId = members[i-1],
+                SantaId = members[i - 1],
             };
             _dbContext.Assignments.Add(assignment);
         }
 
-        var assignment2 = new Assignment()
+        var lastAssigment = new Assignment()
         {
             GameId = game.Id,
             RecipientId = members[0],
             SantaId = members[^1],
         };
-        _dbContext.Assignments.Add(assignment2);
+        _dbContext.Assignments.Add(lastAssigment);
     }
+
+    #endregion
 }
 
 public static class ShuffleExtension

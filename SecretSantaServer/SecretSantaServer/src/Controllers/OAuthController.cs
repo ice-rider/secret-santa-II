@@ -23,13 +23,13 @@ public class OAuthController : ControllerBase
     }
 
     [HttpGet("google")]
-    public async Task<IActionResult> LoginByGoogle()
+    public IActionResult LoginByGoogle()
     {
         var state = AddStateToCookies();
 
         var clientId = _config["OAuth:Google:ClientId"]!;
         var redirectUri = $"{Request.Scheme}://{Request.Host}/api/oauth/google/callback";
-        var scope = "openid email profile";
+        const string scope = "openid email profile";
 
         var queryParams = new Dictionary<string, string>
         {
@@ -46,13 +46,13 @@ public class OAuthController : ControllerBase
     }
 
     [HttpGet("github")]
-    public async Task<IActionResult> LoginByGithub()
+    public IActionResult LoginByGithub()
     {
         var state = AddStateToCookies();
 
         var clientId = _config["OAuth:Github:ClientId"]!;
         var redirectUri = $"{Request.Scheme}://{Request.Host}/api/oauth/github/callback";
-        var scope = "read:user user:email";
+        const string scope = "read:user user:email";
 
         var queryParams = new Dictionary<string, string>
         {
@@ -62,7 +62,7 @@ public class OAuthController : ControllerBase
             ["state"] = state,
         };
 
-        return Redirect(QueryHelpers.AddQueryString(GithubOAuthUri, queryParams));
+        return Redirect(QueryHelpers.AddQueryString(GithubOAuthUri, queryParams!));
     }
 
     private string AddStateToCookies()
@@ -71,8 +71,8 @@ public class OAuthController : ControllerBase
         Response.Cookies.Append("OAuthState", state, new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
+            Secure = Request.IsHttps,
+            SameSite = SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.AddMinutes(5)
         });
         return state;

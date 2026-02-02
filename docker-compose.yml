@@ -85,9 +85,12 @@ services:
     networks:
       - secret-santa-network
   zipkin:
+    container_name: zipkin
     image: openzipkin/zipkin
-    container_name: secret-santa-telemetry
-    restart: always
+    ports:
+      - "9411:9411"
+    environment:
+      - STORAGE_TYPE=mem
     networks:
       - secret-santa-network
 

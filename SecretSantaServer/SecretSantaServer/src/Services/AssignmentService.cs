@@ -33,7 +33,9 @@ public class AssignmentService : IAssignmentService
             .ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == gameId);
         if (game == null)
             return Result<GameMemberDto>.Failure($"Game {gameId} not found", StatusCodes.Status404NotFound);
-
+        if (game.Status != GameStatus.Started)
+            return Result<GameMemberDto>.Failure("Game has not started yet", StatusCodes.Status400BadRequest);
+        
         var member = game.GameMembers.FirstOrDefault(g => g.GameId == gameId && g.UserId == userId);
         if (member == null)
             return Result<GameMemberDto>.Failure($"User {userId} not found in game {gameId}",
@@ -44,7 +46,7 @@ public class AssignmentService : IAssignmentService
             .ThenInclude(x => x.User)
             .FirstOrDefaultAsync(x => x.SantaId == member.Id);
         if (assignment == null)
-            return Result<GameMemberDto>.Failure("Assignment not found", StatusCodes.Status404NotFound);
+            return Result<GameMemberDto>.Failure($"User {userId} not found in game {gameId}", StatusCodes.Status404NotFound);
 
         return Result<GameMemberDto>.Success(new GameMemberDto(assignment.Recipient));
     }

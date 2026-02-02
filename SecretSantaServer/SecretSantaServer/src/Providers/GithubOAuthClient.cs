@@ -10,6 +10,7 @@ public class GithubOAuthClient : IOAuthClient
     private readonly string _clientId;
     private readonly string _clientSecret;
 
+    public OAuthProvider Provider=> OAuthProvider.Github;
     private const string EmailsRequestUri = "https://api.github.com/user/emails";
     private const string UsersRequestUri = "https://api.github.com/user";
     private const string AccessTokenRequestUri = "https://github.com/login/oauth/access_token";

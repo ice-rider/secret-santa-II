@@ -9,6 +9,7 @@ public class GoogleOAuthClient : IOAuthClient
     private readonly string _clientId;
     private readonly string _clientSecret;
 
+    public OAuthProvider Provider => OAuthProvider.Google;
     private const string UserRequestUri = "https://www.googleapis.com/oauth2/v2/userinfo";
     private const string TokenRequestUri = "https://oauth2.googleapis.com/token";
 
@@ -27,7 +28,7 @@ public class GoogleOAuthClient : IOAuthClient
 
         _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
 
-        return await GetUserInfo();
+        return await GetUserFromGoogle();
     }
 
     private async Task<string?> GetAccessToken(string code, string redirectUri)
@@ -50,7 +51,7 @@ public class GoogleOAuthClient : IOAuthClient
         return accessToken;
     }
     
-    private async Task<OAuthUserInfo> GetUserInfo()
+    private async Task<OAuthUserInfo> GetUserFromGoogle()
     {
         var userResponse = await _httpClient.GetAsync(UserRequestUri);
         var userJson = await userResponse.Content.ReadFromJsonAsync<JsonDocument>();
@@ -58,7 +59,7 @@ public class GoogleOAuthClient : IOAuthClient
         var id = userJson!.RootElement.GetProperty("id").GetString();
         var email = userJson.RootElement.TryGetProperty("email", out var e) ? e.GetString() : null;
         var name = userJson.RootElement.TryGetProperty("name", out var n) ? n.GetString() : null;
-        var emailVerified = userJson.RootElement.TryGetProperty("verified_email", out var v) ? v.GetBoolean() : false;
+        var emailVerified = userJson.RootElement.TryGetProperty("verified_email", out var v) && v.GetBoolean();
         if (!emailVerified)
             email = null;
         return new OAuthUserInfo(OAuthProvider.Google, id!, email, name);
