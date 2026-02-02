@@ -246,7 +246,9 @@ public class GameService : IGameService
         _dbContext.GameMembers.Remove(gameMember);
         await _dbContext.SaveChangesAsync();
 
-        var user = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == userId);
+        var user = await _cacheRepository.GetAsync<User>(gameMember.UserId.ToString());
+        if (user == null)
+            user = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == userId);
         await _hubContext.Clients.Group($"game-{game.Id}")
             .SendAsync(_userExitMethod, new EventDto<UserProfileDto>($"user-exit", new UserProfileDto(user!)));
 

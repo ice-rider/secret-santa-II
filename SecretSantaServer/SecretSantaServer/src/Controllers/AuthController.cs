@@ -47,8 +47,10 @@ public class AuthController : ControllerBase
     }
     
     [HttpPost("logout")]
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
+        var userId = GetUserId();
         if (!Request.Cookies.TryGetValue("refresh_token", out string refreshToken))
         {
             return Unauthorized("Refresh token missing");
@@ -62,8 +64,10 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh")]
+    [Authorize]
     public async Task<IActionResult> RefreshToken()
     {
+        var userId = GetUserId();
         if (!Request.Cookies.TryGetValue("refresh_token", out string refreshToken))
         {
             return Unauthorized("Refresh token missing");

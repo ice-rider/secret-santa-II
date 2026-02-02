@@ -96,6 +96,7 @@ public class AuthService : IAuthService
 
         var createdUser = _dbContext.Users.Add(newUser).Entity;
         await _dbContext.SaveChangesAsync();
+        await _cacheRepository.SetAsync(createdUser.Id.ToString(), createdUser, TimeSpan.FromDays(7));
         return createdUser;
     }
 }
