@@ -43,14 +43,15 @@ public class AuthServiceTests : IDisposable
             .Returns("fake_jwt_token");
 
         _mockCacheRepository
-            .Setup(repo => repo.SetAsync(It.IsAny<int>(), It.IsAny<RefreshToken>(), It.IsAny<TimeSpan>()))
+            .Setup(repo => repo.SetAsync(It.IsAny<string>(), It.IsAny<UserTokenInfo>(), It.IsAny<TimeSpan>()))
             .Returns(Task.CompletedTask);
         
         var result = await _authService.Register(request);
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.NotNull(result.Value.AccessToken);
+        Assert.NotNull(result.Value.User);
+        Assert.NotNull(result.Value.User.AccessToken);
         Assert.NotNull(result.Value.RefreshToken);
     }
 
@@ -114,14 +115,15 @@ public class AuthServiceTests : IDisposable
             .Returns("fake_jwt_token");
 
         _mockCacheRepository
-            .Setup(repo => repo.SetAsync(It.IsAny<int>(), It.IsAny<RefreshToken>(), It.IsAny<TimeSpan>()))
+            .Setup(repo => repo.SetAsync(It.IsAny<string>(), It.IsAny<UserTokenInfo>(), It.IsAny<TimeSpan>()))
             .Returns(Task.CompletedTask);
         
         var result = await _authService.Login(request);
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.NotNull(result.Value.AccessToken);
+        Assert.NotNull(result.Value.User);
+        Assert.NotNull(result.Value.User.AccessToken);
         Assert.NotNull(result.Value.RefreshToken);
     }
 
@@ -161,15 +163,14 @@ public class AuthServiceTests : IDisposable
     {
         var userId = 1;
         var refreshToken = "valid_refresh_token";
+        
+        _mockCacheRepository.Setup(repo => repo.GetAsync<UserTokenInfo>(refreshToken))
+            .ReturnsAsync(new UserTokenInfo(userId));
 
-        var refreshTokenObj = new RefreshToken(userId, refreshToken);
-        _mockCacheRepository.Setup(repo => repo.GetAsync<RefreshToken>(userId))
-            .ReturnsAsync(refreshTokenObj);
-
-        _mockCacheRepository.Setup(repo => repo.RemoveAsync<RefreshToken>(userId))
+        _mockCacheRepository.Setup(repo => repo.RemoveAsync<UserTokenInfo>(refreshToken))
             .Returns(Task.CompletedTask);
         
-        var result = await _authService.Logout(userId, refreshToken);
+        var result = await _authService.Logout(refreshToken);
 
         Assert.True(result.IsSuccess);
         Assert.True(result.Value);
@@ -181,10 +182,10 @@ public class AuthServiceTests : IDisposable
         var userId = 1;
         var refreshToken = "invalid_refresh_token";
 
-        _mockCacheRepository.Setup(repo => repo.GetAsync<RefreshToken>(userId))
-            .ReturnsAsync((RefreshToken)null);
+        _mockCacheRepository.Setup(repo => repo.GetAsync<UserTokenInfo>(refreshToken))
+            .ReturnsAsync((UserTokenInfo)null);
         
-        var result = await _authService.Logout(userId, refreshToken);
+        var result = await _authService.Logout(refreshToken);
         
         Assert.False(result.IsSuccess);
         Assert.Equal("Refresh Token Not Found", result.Error);

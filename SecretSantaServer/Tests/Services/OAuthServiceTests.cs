@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using SecretSantaServer.Data;
+using SecretSantaServer.DTOs;
 using SecretSantaServer.Enums;
 using SecretSantaServer.Models;
 using SecretSantaServer.Providers;
@@ -33,13 +34,14 @@ public class OAuthServiceTests : IDisposable
         _mockCacheRepository = new Mock<ICacheRepository>();
         _mockGoogleOAuthClient = new Mock<IOAuthClient>();
         _mockGithubOAuthClient = new Mock<IOAuthClient>();
+        _mockGoogleOAuthClient.Setup(client => client.Provider).Returns(OAuthProvider.Google);
+        _mockGithubOAuthClient.Setup(client => client.Provider).Returns(OAuthProvider.Github);
 
         _oAuthService = new OAuthService(
             _dbContext,
             _mockAccessTokenGenerator.Object,
-            _mockGoogleOAuthClient.Object,
-            _mockCacheRepository.Object,
-            _mockGithubOAuthClient.Object);
+            new List<IOAuthClient>() { _mockGoogleOAuthClient.Object, _mockGithubOAuthClient.Object },
+            _mockCacheRepository.Object);
     }
 
     [Fact]
@@ -54,15 +56,13 @@ public class OAuthServiceTests : IDisposable
             .Returns("fake_jwt_token");
 
         _mockCacheRepository
-            .Setup(repo => repo.SetAsync(It.IsAny<int>(), It.IsAny<RefreshToken>(), It.IsAny<TimeSpan>()))
+            .Setup(repo => repo.SetAsync(It.IsAny<string>(), It.IsAny<UserTokenInfo>(), It.IsAny<TimeSpan>()))
             .Returns(Task.CompletedTask);
 
         var result = await _oAuthService.OAuthLogin(Code, State, OAuthProvider.Google, RedirectUri);
 
         Assert.True(result.IsSuccess);
-        Assert.NotNull(result.Value);
-        Assert.NotNull(result.Value.AccessToken);
-        Assert.NotNull(result.Value.RefreshToken);
+        Assert.NotNull(result.Value.refreshToken);
     }
 
     [Fact]
@@ -77,15 +77,13 @@ public class OAuthServiceTests : IDisposable
             .Returns("fake_jwt_token");
 
         _mockCacheRepository
-            .Setup(repo => repo.SetAsync(It.IsAny<int>(), It.IsAny<RefreshToken>(), It.IsAny<TimeSpan>()))
+            .Setup(repo => repo.SetAsync(It.IsAny<string>(), It.IsAny<UserTokenInfo>(), It.IsAny<TimeSpan>()))
             .Returns(Task.CompletedTask);
 
         var result = await _oAuthService.OAuthLogin(Code, State, OAuthProvider.Github, RedirectUri);
 
         Assert.True(result.IsSuccess);
-        Assert.NotNull(result.Value);
-        Assert.NotNull(result.Value.AccessToken);
-        Assert.NotNull(result.Value.RefreshToken);
+        Assert.NotNull(result.Value.refreshToken);
     }
 
     [Fact]
@@ -130,15 +128,13 @@ public class OAuthServiceTests : IDisposable
             .Returns("fake_jwt_token");
 
         _mockCacheRepository
-            .Setup(repo => repo.SetAsync(It.IsAny<int>(), It.IsAny<RefreshToken>(), It.IsAny<TimeSpan>()))
+            .Setup(repo => repo.SetAsync(It.IsAny<string>(), It.IsAny<UserTokenInfo>(), It.IsAny<TimeSpan>()))
             .Returns(Task.CompletedTask);
 
         var result = await _oAuthService.OAuthLogin(Code, State, OAuthProvider.Google, RedirectUri);
 
         Assert.True(result.IsSuccess);
-        Assert.NotNull(result.Value);
-        Assert.NotNull(result.Value.AccessToken);
-        Assert.NotNull(result.Value.RefreshToken);
+        Assert.NotNull(result.Value.refreshToken);
     }
 
     public void Dispose()
