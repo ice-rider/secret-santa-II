@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace SecretSantaServer.Models;
 
@@ -9,6 +10,7 @@ public class GameMember
     public int Id { get; init; }
     
     public int GameId { get; init; }
+    [JsonIgnore]
     public Game Game { get; init; }
     
     public int UserId { get; init; }

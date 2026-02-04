@@ -21,6 +21,7 @@ builder.Services.AddScoped<ICacheRepository, RedisCacheRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
+builder.Services.AddScoped<ICacheRepository, RedisCacheRepository>();
 builder.Services.AddScoped<IOAuthService, OAuthService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 

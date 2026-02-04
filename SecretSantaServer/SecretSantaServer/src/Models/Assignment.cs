@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace SecretSantaServer.Models;
 
@@ -6,6 +7,7 @@ namespace SecretSantaServer.Models;
 public class Assignment
 {
     public int GameId { get; init; }
+    [JsonIgnore]
     public Game Game { get; init; }
     
     public int RecipientId { get; init; }

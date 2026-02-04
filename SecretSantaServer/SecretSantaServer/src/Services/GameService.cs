@@ -184,7 +184,7 @@ public class GameService : IGameService
 
         var result = await ProcessNewStatus(gameId, newStatus, game);
         await _cacheRepository.RemoveAsync<Game>(game.Id.ToString());
-        await _cacheRepository.SetAsync(game.Id.ToString(), result, gameExpiration);
+        await _cacheRepository.SetAsync(game.Id.ToString(), game, gameExpiration);
         return result;
     }
 

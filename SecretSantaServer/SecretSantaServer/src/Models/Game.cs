@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using SecretSantaServer.Enums;
 
 namespace SecretSantaServer.Models;
@@ -13,6 +14,7 @@ public class Game
     public string? Code { get; set; }
 
     public int AdminId { get; set; }
+    [JsonIgnore]
     public User Admin { get; set; } = null!;
     public bool IsAdminParticipating { get; set; } = true;
     public ICollection<GameMember> GameMembers { get; init; } = null!;

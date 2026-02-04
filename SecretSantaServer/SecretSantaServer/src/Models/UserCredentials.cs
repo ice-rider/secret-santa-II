@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace SecretSantaServer.Models;
 
@@ -6,6 +7,7 @@ namespace SecretSantaServer.Models;
 public class UserCredentials
 {
     public int UserId { get; init; }
+    [JsonIgnore]
     public User User { get; init; } = null!;
     public string? Email { get; set; }
     public string? PasswordHash { get; set; }

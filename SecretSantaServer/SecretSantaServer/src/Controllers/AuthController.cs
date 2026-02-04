@@ -89,10 +89,4 @@ public class AuthController : ControllerBase
             Expires = DateTimeOffset.UtcNow.AddDays(30)
         });
     }
-    
-    private int GetUserId()
-    {
-        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        return userId;
-    }
 }
