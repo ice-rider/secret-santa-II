@@ -11,7 +11,7 @@ public class RedisCacheRepository : ICacheRepository
 
     private readonly IReadOnlyDictionary<Type, string> prefixes = new Dictionary<Type, string>()
     {
-        { typeof(Game), "Game" },
+        { typeof(GameDto), "Game" },
         { typeof(UserTokenInfo), "RefreshToken" },
     };
 

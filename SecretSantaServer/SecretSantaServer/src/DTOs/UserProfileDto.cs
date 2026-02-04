@@ -8,6 +8,7 @@ public class UserProfileDto
     public string Name { get; set; }
     public string? AvatarUrl { get; set; }
 
+    public UserProfileDto(){}
     public UserProfileDto(User user)
     {
         Id = user.Id;

@@ -19,6 +19,7 @@ public class GameDto
     public DateTime? StartedAt { get; set; }
     public DateTime? FinishedAt { get; set; }
 
+    public GameDto(){}
     public GameDto(Game game)
     {
         Id = game.Id;
