@@ -6,5 +6,5 @@ namespace SecretSantaServer.Services;
 
 public interface IOAuthService
 {
-    Task<Result<UserAndTokensDto>> OAuthLogin(string code, string state, OAuthProvider provider, string redirectUri);
+    Task<Result<(int userId, string refreshToken)>> OAuthLogin(string code, string state, OAuthProvider provider, string redirectUri);
 }

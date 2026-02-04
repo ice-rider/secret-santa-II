@@ -117,7 +117,7 @@ public class OAuthController : ControllerBase
         if (!result.IsSuccess)
             return Redirect(GetRedirectUrlWithError(result.Error));
 
-        return Redirect(GetRedirectUrlWithUserInfo(result.Value));
+        return Redirect(GetRedirectUrlWithUserInfo(result.Value.userId, result.Value.refreshToken));
     }
 
     private IActionResult? CheckOAuthParameters(string? code, string? state, string? error)
@@ -143,15 +143,15 @@ public class OAuthController : ControllerBase
         return $"{_config["Frontend:AuthCallback"]}?error={Uri.EscapeDataString(error)}";
     }
     
-    private string GetRedirectUrlWithUserInfo(UserAndTokensDto userInfo)
+    private string GetRedirectUrlWithUserInfo(int userId, string refreshToken)
     {
-        Response.Cookies.Append("refresh_token", userInfo.RefreshToken, new CookieOptions
+        Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
         {
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
             Expires = DateTimeOffset.UtcNow.AddDays(30)
         });
-        return $"{_config["Frontend:AuthCallback"]}?id={Uri.EscapeDataString(userInfo.UserProfile.Id.ToString())}";
+        return $"{_config["Frontend:AuthCallback"]}?id={Uri.EscapeDataString(userId.ToString())}";
     }
 }

@@ -5,8 +5,8 @@ namespace SecretSantaServer.Services;
 
 public interface IAuthService
 {
-    Task<Result<UserAndTokensDto>> Register(EmailRegisterRequest request);
-    Task<Result<UserAndTokensDto>> Login(EmailLoginRequest request);
-    Task<Result<bool>> Logout(int userId, string refreshToken);
-    Task<Result<UserAndTokensDto>> Refresh(int userId, string oldRefreshToken);
+    Task<Result<UserAuthInfoDto>> Register(EmailRegisterRequest request);
+    Task<Result<UserAuthInfoDto>> Login(EmailLoginRequest request);
+    Task<Result<bool>> Logout(string refreshToken);
+    Task<Result<UserAuthInfoDto>> Refresh(string oldRefreshToken);
 }

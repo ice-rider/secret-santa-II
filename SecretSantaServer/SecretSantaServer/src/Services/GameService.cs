@@ -61,7 +61,7 @@ public class GameService : IGameService
 
     public async Task<Result<GameDto>> GetGameById(int id)
     {
-        var game = await _cacheRepository.GetAsync<Game>(id);
+        var game = await _cacheRepository.GetAsync<Game>(id.ToString());
         if (game == null)
             game = await _dbContext.Games
                 .AsNoTracking()
@@ -71,19 +71,19 @@ public class GameService : IGameService
 
         if (game == null)
             return Result<GameDto>.Failure("Game not found", StatusCodes.Status404NotFound);
-        await _cacheRepository.SetAsync(id, game, gameExpiration);
+        await _cacheRepository.SetAsync(id.ToString(), game, gameExpiration);
         return Result<GameDto>.Success(new GameDto(game));
     }
 
     public async Task<GameStatus?> GetGameStatusById(int id)
     {
-        var game = await _cacheRepository.GetAsync<Game>(id);
+        var game = await _cacheRepository.GetAsync<Game>(id.ToString());
         if (game == null)
             game = await _dbContext.Games.FirstOrDefaultAsync(x => x.Id == id);
         if (game == null)
             return null;
 
-        await _cacheRepository.SetAsync(id, game, gameExpiration);
+        await _cacheRepository.SetAsync(id.ToString(), game, gameExpiration);
         return game.Status;
     }
 
@@ -115,7 +115,7 @@ public class GameService : IGameService
 
             if (await TryAddGame(adminId, game)) continue;
 
-            await _cacheRepository.SetAsync(game.Id, game, gameExpiration);
+            await _cacheRepository.SetAsync(game.Id.ToString(), game, gameExpiration);
             return Result<GameDto>.Success(new GameDto(game), StatusCodes.Status201Created);
         }
 
@@ -124,7 +124,7 @@ public class GameService : IGameService
 
     public async Task<Result<GameDto>> UpdateGame(int gameId, UpdateGameRequest request, int userId)
     {
-        var game = await _cacheRepository.GetAsync<Game>(gameId);
+        var game = await _cacheRepository.GetAsync<Game>(gameId.ToString());
         if (game == null)
             game = await _dbContext.Games.FindAsync(gameId);
 
@@ -146,8 +146,8 @@ public class GameService : IGameService
         game.ScheduledAt = request.StartsAt;
         game.IsAdminParticipating = request.IsAdminParticipating;
 
-        await _cacheRepository.RemoveAsync<Game>(game.Id);
-        await _cacheRepository.SetAsync(game.Id, game, gameExpiration);
+        await _cacheRepository.RemoveAsync<Game>(game.Id.ToString());
+        await _cacheRepository.SetAsync(game.Id.ToString(), game, gameExpiration);
 
         _dbContext.Games.Update(game);
         await _dbContext.SaveChangesAsync();
@@ -158,7 +158,7 @@ public class GameService : IGameService
     public async Task<Result<GameDto>> ChangeStatusGame(int gameId, int userId, GameStatus expectedStatus,
         GameStatus newStatus)
     {
-        var game = await _cacheRepository.GetAsync<Game>(gameId);
+        var game = await _cacheRepository.GetAsync<Game>(gameId.ToString());
         if (game == null)
             game = await _dbContext.Games
                 .Include(g => g.GameMembers)
@@ -183,8 +183,8 @@ public class GameService : IGameService
         }
 
         var result = await ProcessNewStatus(gameId, newStatus, game);
-        await _cacheRepository.RemoveAsync<Game>(game.Id);
-        await _cacheRepository.SetAsync(game.Id, result, gameExpiration);
+        await _cacheRepository.RemoveAsync<Game>(game.Id.ToString());
+        await _cacheRepository.SetAsync(game.Id.ToString(), result, gameExpiration);
         return result;
     }
 
@@ -217,14 +217,14 @@ public class GameService : IGameService
 
         await _hubContext.Clients.Group($"game-{game.Id}")
             .SendAsync(_userJoinMethod, new EventDto<UserProfileDto>($"user-joined", new UserProfileDto(user)));
-        await _cacheRepository.RemoveAsync<Game>(game.Id);
-        await _cacheRepository.SetAsync(game.Id, game, gameExpiration);
+        await _cacheRepository.RemoveAsync<Game>(game.Id.ToString());
+        await _cacheRepository.SetAsync(game.Id.ToString(), game, gameExpiration);
         return Result<GameDto>.Success(new GameDto(game));
     }
 
     public async Task<Result<GameDto>> ExitGame(int gameId, int userId)
     {
-        var game = await _cacheRepository.GetAsync<Game>(gameId);
+        var game = await _cacheRepository.GetAsync<Game>(gameId.ToString());
         if (game == null)
             game = await _dbContext.Games.Include(x => x.GameMembers)
                 .FirstOrDefaultAsync(g => g.Id == gameId);
@@ -250,14 +250,14 @@ public class GameService : IGameService
         await _hubContext.Clients.Group($"game-{game.Id}")
             .SendAsync(_userExitMethod, new EventDto<UserProfileDto>($"user-exit", new UserProfileDto(user!)));
 
-        await _cacheRepository.RemoveAsync<Game>(game.Id);
-        await _cacheRepository.SetAsync(game.Id, game, gameExpiration);
+        await _cacheRepository.RemoveAsync<Game>(game.Id.ToString());
+        await _cacheRepository.SetAsync(game.Id.ToString(), game, gameExpiration);
         return Result<GameDto>.Success(new GameDto(game));
     }
 
     public async Task<Result<bool>> RemoveMember(int gameId, int memberId, int userId)
     {
-        var game = await _cacheRepository.GetAsync<Game>(gameId);
+        var game = await _cacheRepository.GetAsync<Game>(gameId.ToString());
         if (game == null)
             game = await _dbContext.Games
                 .Include(g => g.GameMembers)
@@ -283,12 +283,11 @@ public class GameService : IGameService
         _dbContext.GameMembers.Remove(member);
         await _dbContext.SaveChangesAsync();
 
-        await _cacheRepository.RemoveAsync<Game>(game.Id);
-        await _cacheRepository.SetAsync(game.Id, game, gameExpiration);
+        await _cacheRepository.RemoveAsync<Game>(game.Id.ToString());
+        await _cacheRepository.SetAsync(game.Id.ToString(), game, gameExpiration);
 
         return Result<bool>.Success(true);
     }
-
     #endregion
 
     #region private

@@ -20,66 +20,66 @@ public class AuthService : IAuthService
         _accessTokenAccessTokenGenerator = accessTokenGenerator;
     }
 
-    public async Task<Result<UserAndTokensDto>> Register(EmailRegisterRequest request)
+    public async Task<Result<UserAuthInfoDto>> Register(EmailRegisterRequest request)
     {
         if (await _dbContext.Users.AnyAsync(u => u.Credential.Email == request.Email))
-            return Result<UserAndTokensDto>.Failure("Email already used", StatusCodes.Status409Conflict);
+            return Result<UserAuthInfoDto>.Failure("Email already used", StatusCodes.Status409Conflict);
         var createdUser = await CreateUser(request);
 
         var refreshToken = await CreateRefreshToken(createdUser.Id);
         var accessToken = _accessTokenAccessTokenGenerator.GenerateJwtToken(createdUser.Id.ToString(), Role.User);
 
-        var result = new UserAndTokensDto(new UserProfileDto(createdUser), refreshToken.Token, accessToken);
-        return Result<UserAndTokensDto>.Success(result);
+        var result = new UserAndAccessTokenDto(new UserProfileDto(createdUser), accessToken);
+        return Result<UserAuthInfoDto>.Success(new UserAuthInfoDto(result,refreshToken));
     }
 
-    public async Task<Result<UserAndTokensDto>> Login(EmailLoginRequest request)
+    public async Task<Result<UserAuthInfoDto>> Login(EmailLoginRequest request)
     {
         var foundedUser = await _dbContext.Users
             .AsNoTracking()
             .Include(x=>x.Credential)
             .FirstOrDefaultAsync(u => u.Credential.Email == request.Email);
         if (foundedUser == null || !BCrypt.Net.BCrypt.Verify(request.Password, foundedUser.Credential.PasswordHash))
-            return Result<UserAndTokensDto>.Failure($"Wrong Email Or Password", StatusCodes.Status401Unauthorized);
+            return Result<UserAuthInfoDto>.Failure($"Wrong Email Or Password", StatusCodes.Status401Unauthorized);
 
         var refreshToken = await CreateRefreshToken(foundedUser.Id);
         var accessToken = _accessTokenAccessTokenGenerator.GenerateJwtToken(foundedUser.Id.ToString(), Role.User);
-        var result = new UserAndTokensDto(new UserProfileDto(foundedUser), refreshToken.Token, accessToken);
+        var result = new UserAndAccessTokenDto(new UserProfileDto(foundedUser), accessToken);
 
-        return Result<UserAndTokensDto>.Success(result);
+        return Result<UserAuthInfoDto>.Success(new UserAuthInfoDto(result,refreshToken));
     }
 
-    public async Task<Result<bool>> Logout(int userId, string refreshToken)
+    public async Task<Result<bool>> Logout(string refreshToken)
     {
-        var foundedToken = await _cacheRepository.GetAsync<RefreshToken>(userId);
+        var foundedToken = await _cacheRepository.GetAsync<UserTokenInfo>(refreshToken);
         if (foundedToken == null)
             return Result<bool>.Failure("Refresh Token Not Found", StatusCodes.Status401Unauthorized);
 
-        await _cacheRepository.RemoveAsync<RefreshToken>(userId);
+        await _cacheRepository.RemoveAsync<UserTokenInfo>(refreshToken);
         
         return Result<bool>.Success(true);
     }
 
-    public async Task<Result<UserAndTokensDto>> Refresh(int userId, string oldRefreshToken)
+    public async Task<Result<UserAuthInfoDto>> Refresh(string oldRefreshToken)
     {
-        var foundedToken = await _cacheRepository.GetAsync<RefreshToken>(userId);
+        var foundedToken = await _cacheRepository.GetAsync<UserTokenInfo>(oldRefreshToken);
         if (foundedToken == null)
-            return Result<UserAndTokensDto>.Failure("Invalid Refresh Token", StatusCodes.Status401Unauthorized);
+            return Result<UserAuthInfoDto>.Failure("Invalid Refresh Token", StatusCodes.Status401Unauthorized);
 
         var refreshToken = await CreateRefreshToken(foundedToken.UserId);
         var accessToken = _accessTokenAccessTokenGenerator.GenerateJwtToken(foundedToken.UserId.ToString(), Role.User);
         var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == foundedToken.UserId);
 
-        var result = new UserAndTokensDto(new UserProfileDto(user!), refreshToken.Token, accessToken);
-        await _cacheRepository.RemoveAsync<RefreshToken>(userId);
+        var result = new UserAndAccessTokenDto(new UserProfileDto(user!), accessToken);
+        await _cacheRepository.RemoveAsync<UserTokenInfo>(oldRefreshToken);
 
-        return Result<UserAndTokensDto>.Success(result);
+        return Result<UserAuthInfoDto>.Success(new UserAuthInfoDto(result,refreshToken));
     }
 
-    private async Task<RefreshToken> CreateRefreshToken(int userId)
+    private async Task<string> CreateRefreshToken(int userId)
     {
-        var refreshToken = new RefreshToken(userId, RefreshTokenGenerator.GenerateToken());
-        await _cacheRepository.SetAsync(userId, refreshToken, TimeSpan.FromDays(30));
+        var refreshToken = RefreshTokenGenerator.GenerateToken();
+        await _cacheRepository.SetAsync(refreshToken, new UserTokenInfo(userId), TimeSpan.FromDays(30));
         return refreshToken;
     }
 

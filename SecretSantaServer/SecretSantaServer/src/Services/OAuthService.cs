@@ -24,13 +24,13 @@ public class OAuthService : IOAuthService
         _cacheRepository = cacheRepository;
     }
 
-    public async Task<Result<UserAndTokensDto>> OAuthLogin(string code, string state, OAuthProvider provider,
+    public async Task<Result<(int userId, string refreshToken)>> OAuthLogin(string code, string state, OAuthProvider provider,
         string redirectUri)
     {
         var client = _oAuthClients[provider];
         var userInfo = await client.GetUserInfoAsync(code, redirectUri);
         if (userInfo.ProviderId == null)
-            return Result<UserAndTokensDto>.Failure("Provider Id Is Missing", StatusCodes.Status401Unauthorized);
+            return Result<(int userId, string refreshToken)>.Failure("Provider Id Is Missing", StatusCodes.Status401Unauthorized);
 
         var userByProviderId = await _dbContext.Users.AsNoTracking()
             .Include(x => x.Credential)
@@ -75,14 +75,10 @@ public class OAuthService : IOAuthService
         return (user, isNewUser);
     }
 
-    private async Task<Result<UserAndTokensDto>> GetSuccessResult(User userByProviderId, bool isNewUser = false)
+    private async Task<Result<(int userId, string refreshToken)>> GetSuccessResult(User userByProviderId, bool isNewUser = false)
     {
         var refreshTokenByProvider = await CreateRefreshToken(userByProviderId!.Id);
-        var accessTokenByProvider = _accessTokenGenerator.GenerateJwtToken(userByProviderId.Id.ToString(), Role.User);
-
-        return Result<UserAndTokensDto>.Success(new UserAndTokensDto(new UserProfileDto(userByProviderId),
-            refreshTokenByProvider.Token,
-            accessTokenByProvider, isNewUser));
+        return Result<(int userId, string refreshToken)>.Success((userByProviderId.Id,refreshTokenByProvider));
     }
 
     private async Task<User> CreateUserByOAuth(OAuthProvider provider, OAuthUserInfo userInfo)
@@ -105,10 +101,10 @@ public class OAuthService : IOAuthService
         return newUser;
     }
 
-    private async Task<RefreshToken> CreateRefreshToken(int userId)
+    private async Task<string> CreateRefreshToken(int userId)
     {
-        var refreshToken = new RefreshToken(userId, RefreshTokenGenerator.GenerateToken());
-        await _cacheRepository.SetAsync(userId, refreshToken, TimeSpan.FromDays(30));
+        var refreshToken = RefreshTokenGenerator.GenerateToken();
+        await _cacheRepository.SetAsync(refreshToken, new UserTokenInfo(userId), TimeSpan.FromDays(30));
         return refreshToken;
     }
 }

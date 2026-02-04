@@ -12,7 +12,7 @@ public class RedisCacheRepository : ICacheRepository
     private readonly IReadOnlyDictionary<Type, string> prefixes = new Dictionary<Type, string>()
     {
         { typeof(Game), "Game" },
-        { typeof(RefreshToken), "RefreshToken" },
+        { typeof(UserTokenInfo), "RefreshToken" },
     };
 
     public RedisCacheRepository(IDistributedCache cache)
@@ -20,14 +20,14 @@ public class RedisCacheRepository : ICacheRepository
         _cache = cache;
     }
 
-    public async Task<T?> GetAsync<T>(int id)
+    public async Task<T?> GetAsync<T>(string id)
     {
         var value = await _cache.GetStringAsync(GetKey(typeof(T), id));
         Console.WriteLine("GetAsync: " + value);
         return value == null ? default : JsonSerializer.Deserialize<T>(value);
     }
 
-    public async Task SetAsync<T>(int id, T value, TimeSpan expiration)
+    public async Task SetAsync<T>(string id, T value, TimeSpan expiration)
     {
         var json = JsonSerializer.Serialize(value);
         var options = new DistributedCacheEntryOptions().SetAbsoluteExpiration(expiration);
@@ -35,13 +35,13 @@ public class RedisCacheRepository : ICacheRepository
         await _cache.SetStringAsync(GetKey(typeof(T), id), json, options);
     }
 
-    public async Task RemoveAsync<T>(int id)
+    public async Task RemoveAsync<T>(string id)
     {
         await _cache.RemoveAsync(GetKey(typeof(T), id));
         Console.WriteLine("RemoveAsync: " + id);
     }
 
-    private string GetKey(Type type, int id)
+    private string GetKey(Type type, string id)
     {
         return $"{prefixes[type]}_{id}";
     }

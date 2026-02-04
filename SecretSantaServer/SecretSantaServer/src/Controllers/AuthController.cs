@@ -25,7 +25,7 @@ public class AuthController : ControllerBase
         if (result.IsSuccess)
         {
             AddRefreshTokenToCookies(result.Value.RefreshToken);
-            return CreatedAtRoute(result.Value.UserProfile.Id, result.Value);
+            return CreatedAtRoute(result.Value.User.UserProfile.Id, result.Value.User);
         }
 
         return StatusCode(result.StatusCode, new { result.Error });
@@ -40,23 +40,21 @@ public class AuthController : ControllerBase
         if (result.IsSuccess)
         {
             AddRefreshTokenToCookies(result.Value.RefreshToken);
-            return Ok(result.Value);
+            return Ok(result.Value.User);
         }
         
         return StatusCode(result.StatusCode, new { result.Error });
     }
     
     [HttpPost("logout")]
-    [Authorize]
     public async Task<IActionResult> Logout()
     {
-        var userId = GetUserId();
         if (!Request.Cookies.TryGetValue("refresh_token", out string refreshToken))
         {
             return Unauthorized("Refresh token missing");
         }
         
-        var result = await _authService.Logout(userId, refreshToken);
+        var result = await _authService.Logout(refreshToken);
         if (result.IsSuccess)
             return Ok();
 
@@ -64,20 +62,18 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh")]
-    [Authorize]
     public async Task<IActionResult> RefreshToken()
     {
-        var userId = GetUserId();
         if (!Request.Cookies.TryGetValue("refresh_token", out string refreshToken))
         {
             return Unauthorized("Refresh token missing");
         }
         
-        var result = await _authService.Refresh(userId, refreshToken);
+        var result = await _authService.Refresh(refreshToken);
         if (result.IsSuccess)
         {
             AddRefreshTokenToCookies(result.Value.RefreshToken);
-            return Ok(result.Value);
+            return Ok(result.Value.User);
         }
         
         return StatusCode(result.StatusCode, new { result.Error });
