@@ -9,6 +9,7 @@ const OAuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const { refreshToken } = useAuth(); // Используем refreshToken для проверки аутентификации
   const [error, setError] = useState<string | null>(null);
+  const [loadingMessage, setLoadingMessage] = useState('Processing Authentication...');
 
   useEffect(() => {
     // Log all search parameters for debugging
@@ -47,53 +48,76 @@ const OAuthCallback: React.FC = () => {
       const userId = searchParams.get('id') || searchParams.get('userId') || searchParams.get('user_id');
       console.log('Extracted userId from URL:', userId);
 
-      // Refresh token to load user data (tokens should be already stored)
-      refreshToken()
-        .then(() => {
-          console.log('Successfully refreshed token after OAuth');
-          // Send success message to parent window if this is in a popup
-          if (window.opener && window.opener !== window) {
-            window.opener.postMessage(
-              {
-                type: 'oauth_success',
-                userId: userId || 'unknown', // Pass userId if available, otherwise 'unknown'
-              },
-              window.location.origin // More secure than using '*'
-            );
+      // Small delay to ensure cookies are properly set after OAuth redirect
+      const attemptRefresh = async (retries = 3, delay = 500) => {
+        setLoadingMessage('Verifying authentication...');
+        
+        for (let i = 0; i < retries; i++) {
+          try {
+            console.log(`Attempt ${i + 1} to refresh token after OAuth`);
+            
+            // Refresh token to load user data (tokens should be already stored in cookies)
+            await refreshToken();
+            
+            console.log('Successfully refreshed token after OAuth');
+            
+            // Send success message to parent window if this is in a popup
+            if (window.opener && window.opener !== window) {
+              window.opener.postMessage(
+                {
+                  type: 'oauth_success',
+                  userId: userId || 'unknown', // Pass userId if available, otherwise 'unknown'
+                },
+                window.location.origin // More secure than using '*'
+              );
 
-            // Redirect back to login page with success indicator in URL
-            setTimeout(() => {
-              // Add success parameter to the URL to indicate successful authentication
-              window.location.href = `/login?oauth_success=true`;
-            }, 1000); // Delay to ensure token refresh completes
-          } else {
-            // Not in popup, redirect to home or games page
-            navigate('/games');
+              // Redirect back to login page with success indicator in URL
+              setTimeout(() => {
+                // Add success parameter to the URL to indicate successful authentication
+                window.location.href = `/login?oauth_success=true`;
+              }, 1000); // Delay to ensure token refresh completes
+            } else {
+              // Not in popup, redirect to home or games page
+              navigate('/games');
+            }
+            return; // Success, exit the retry loop
+          } catch (err: any) {
+            console.error(`Token refresh attempt ${i + 1} failed:`, err);
+            
+            if (i < retries - 1) {
+              // Wait before next retry
+              await new Promise(resolve => setTimeout(resolve, delay));
+              setLoadingMessage(`Retrying authentication... (${i + 2}/${retries})`);
+            } else {
+              // All retries failed
+              setError('Failed to authenticate after OAuth. Please try logging in again.');
+              console.error('Error loading user after OAuth:', err);
+
+              if (window.opener && window.opener !== window) {
+                window.opener.postMessage(
+                  {
+                    type: 'oauth_error',
+                    message: 'Failed to authenticate after OAuth',
+                  },
+                  window.location.origin
+                );
+
+                // Redirect back to login page with error indicator in URL
+                setTimeout(() => {
+                  window.location.href = `/login?oauth_error=true&error_message=Failed to authenticate after OAuth`;
+                }, 1000); // Shorter delay for redirect
+              } else {
+                setTimeout(() => {
+                  navigate('/login?oauth_error=true&error_message=token_refresh_failed');
+                }, 3000);
+              }
+            }
           }
-        })
-        .catch((err: any) => {
-          setError('Failed to load user after authentication');
-          console.error('Error loading user:', err);
+        }
+      };
 
-          if (window.opener && window.opener !== window) {
-            window.opener.postMessage(
-              {
-                type: 'oauth_error',
-                message: 'Failed to load user after authentication',
-              },
-              window.location.origin
-            );
-
-            // Redirect back to login page with error indicator in URL
-            setTimeout(() => {
-              window.location.href = `/login?oauth_error=true&error_message=Failed to load user after authentication`;
-            }, 1000); // Shorter delay for redirect
-          } else {
-            setTimeout(() => {
-              navigate('/login?oauth_error=true&error_message=token_refresh_failed');
-            }, 3000);
-          }
-        });
+      // Start the refresh attempt process
+      attemptRefresh();
     }
   }, [searchParams, navigate, refreshToken]);
 
@@ -120,7 +144,7 @@ const OAuthCallback: React.FC = () => {
       ) : (
         <>
           <CircularProgress size={48} />
-          <Typography variant="h6">Processing Authentication...</Typography>
+          <Typography variant="h6">{loadingMessage}</Typography>
           <Typography variant="body2" color="text.secondary">
             Please wait while we complete the authentication process.
           </Typography>

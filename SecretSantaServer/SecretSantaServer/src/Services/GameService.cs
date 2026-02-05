@@ -116,9 +116,12 @@ public class GameService : IGameService
                 ScheduledAt = request.StartsAt
             };
 
-            if (await TryAddGame(adminId, game)) continue;
+            var gameId = await TryAddGame(adminId, game);
+            if (gameId == -1) continue;
 
-            var gameDto = new GameDto(game);
+            var createdGame = await _dbContext.Games.AsNoTracking().Include(x => x.GameMembers)
+                .FirstOrDefaultAsync(x => x.Id == gameId);
+            var gameDto = new GameDto(createdGame!);
             await _cacheRepository.SetAsync(game.Id.ToString(), gameDto, gameExpiration);
             return Result<GameDto>.Success(gameDto, StatusCodes.Status201Created);
         }
@@ -292,11 +295,12 @@ public class GameService : IGameService
 
     #region private
 
-    private async Task<bool> TryAddGame(int adminId, Game game)
+    private async Task<int> TryAddGame(int adminId, Game game)
     {
+        Game createdGame;
         try
         {
-            _dbContext.Games.Add(game);
+            createdGame = _dbContext.Games.Add(game).Entity;
             await _dbContext.SaveChangesAsync();
 
             var adminMember = new GameMember
@@ -312,10 +316,10 @@ public class GameService : IGameService
                   ex.InnerException?.Message.Contains("duplicate") == true)
         {
             _dbContext.Entry(game).State = EntityState.Detached;
-            return true;
+            return -1;
         }
 
-        return false;
+        return createdGame.Id;
     }
 
     private async Task<Result<GameDto>> ProcessNewStatus(int gameId, GameStatus newStatus, Game game)
