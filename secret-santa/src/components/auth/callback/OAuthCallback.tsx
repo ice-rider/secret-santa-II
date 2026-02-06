@@ -12,8 +12,11 @@ const OAuthCallback: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState('Processing Authentication...');
 
   useEffect(() => {
-    // Log all search parameters for debugging
+    console.log('OAuthCallback mounted');
     console.log('OAuthCallback search parameters:', Object.fromEntries(searchParams.entries()));
+
+    // Проверяем, есть ли refreshToken функция
+    console.log('refreshToken function exists:', typeof refreshToken === 'function');
 
     const errorParam = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
@@ -21,6 +24,7 @@ const OAuthCallback: React.FC = () => {
     if (errorParam) {
       const errorMsg = errorDescription || `OAuth error: ${errorParam}`;
       setError(errorMsg);
+      console.log('OAuth error detected:', errorMsg);
 
       // Send error message to parent window if this is in a popup
       if (window.opener && window.opener !== window) {
@@ -49,15 +53,24 @@ const OAuthCallback: React.FC = () => {
       console.log('Extracted userId from URL:', userId);
 
       // Small delay to ensure cookies are properly set after OAuth redirect
-      const attemptRefresh = async (retries = 3, delay = 500) => {
+      const attemptRefresh = async (retries = 3, delay = 1000) => {
         setLoadingMessage('Verifying authentication...');
+        console.log('Starting refresh token attempts...');
         
         for (let i = 0; i < retries; i++) {
+          console.log(`Attempt ${i + 1} to refresh token after OAuth`);
+          
           try {
-            console.log(`Attempt ${i + 1} to refresh token after OAuth`);
+            // Проверяем, что refreshToken функция существует
+            if (typeof refreshToken !== 'function') {
+              throw new Error('refreshToken is not a function');
+            }
+            
+            console.log('Calling refreshToken()...');
             
             // Refresh token to load user data (tokens should be already stored in cookies)
-            await refreshToken();
+            const result = await refreshToken();
+            console.log('Refresh token result:', result);
             
             console.log('Successfully refreshed token after OAuth');
             
@@ -78,18 +91,22 @@ const OAuthCallback: React.FC = () => {
               }, 1000); // Delay to ensure token refresh completes
             } else {
               // Not in popup, redirect to home or games page
+              console.log('Navigating to /games');
               navigate('/games');
             }
             return; // Success, exit the retry loop
           } catch (err: any) {
             console.error(`Token refresh attempt ${i + 1} failed:`, err);
+            console.error('Error details:', err?.response?.data || err?.message || err);
             
             if (i < retries - 1) {
               // Wait before next retry
+              console.log(`Waiting ${delay}ms before next retry...`);
               await new Promise(resolve => setTimeout(resolve, delay));
               setLoadingMessage(`Retrying authentication... (${i + 2}/${retries})`);
             } else {
               // All retries failed
+              console.error('All refresh attempts failed');
               setError('Failed to authenticate after OAuth. Please try logging in again.');
               console.error('Error loading user after OAuth:', err);
 
@@ -117,6 +134,7 @@ const OAuthCallback: React.FC = () => {
       };
 
       // Start the refresh attempt process
+      console.log('About to start refresh token attempts...');
       attemptRefresh();
     }
   }, [searchParams, navigate, refreshToken]);

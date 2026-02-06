@@ -4,11 +4,11 @@ const baseUrl = process.argv[2] || 'http://localhost';
 const concurrentUsers = parseInt(process.argv[3]) || 5;
 const requestsPerUser = parseInt(process.argv[4]) || 3;
 
-console.log(`=== Тестирование Secret Santa API ===`);
+console.log(`=== Тестирование Secret Santa API с аутентификацией ===`);
 console.log(`URL: ${baseUrl}`);
 console.log(`Одновременных пользователей: ${concurrentUsers}`);
 console.log(`Запросов на пользователя: ${requestsPerUser}`);
-console.log(`Всего операций: ${concurrentUsers * requestsPerUser}`);
+console.log(`Всего операций: ${concurrentUsers * (1 + requestsPerUser)}`);
 console.log('');
 
 function generateUniqueUserData(index) {
@@ -71,26 +71,14 @@ async function loginUser(userData) {
     }
 }
 
-async function makeAuthenticatedRequest(userData, method, endpoint, data = null) {
+async function makeAuthenticatedRequest(token, method, endpoint, data = null) {
     try {
-        const loginResult = await loginUser(userData);
-        
-        if (!loginResult.success) {
-            return {
-                success: false,
-                status: loginResult.status,
-                error: `Login failed: ${loginResult.error}`
-            };
-        }
-        
-        const token = loginResult.accessToken;
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         };
         
         let response;
-        //console.log(response);
         if (method === 'GET') {
             response = await axios.get(`${baseUrl}${endpoint}`, { headers, timeout: 15000 });
         } else if (method === 'POST') {
@@ -136,7 +124,24 @@ async function simulateUserScenario(userId) {
         return userResults;
     }
     
-    for (let i = 1; i < requestsPerUser; i++) {
+    const loginStartTime = Date.now();
+    const loginResult = await loginUser(userData);
+    const loginEndTime = Date.now();
+    
+    userResults.push({
+        stage: 'login',
+        success: loginResult.success,
+        statusCode: loginResult.status,
+        responseTime: loginEndTime - loginStartTime
+    });
+    
+    if (!loginResult.success) {
+        return userResults;
+    }
+    
+    const token = loginResult.accessToken;
+    
+    for (let i = 0; i < requestsPerUser; i++) {
         const endpoints = [
             { method: 'GET', path: `/api/users/me/games?_t=${Date.now()}_${Math.random()}` },
             { method: 'GET', path: `/api/games/1?_t=${Date.now()}_${Math.random()}` },
@@ -156,7 +161,7 @@ async function simulateUserScenario(userId) {
         const startTime = Date.now();
         
         const requestResult = await makeAuthenticatedRequest(
-            userData,
+            token,
             endpoint.method,
             endpoint.path,
             endpoint.data
@@ -190,6 +195,8 @@ async function runSimpleAuthTest() {
     
     const totalTime = Date.now() - startTime;
     
+    console.log('=== Результаты по пользователям ===');
+    
     let totalSuccessful = 0;
     let totalFailed = 0;
     let totalOperations = 0;
@@ -200,14 +207,7 @@ async function runSimpleAuthTest() {
         const userSuccessful = userResults.filter(r => r.success).length;
         const userFailed = userResults.length - userSuccessful;
         const userAvgTime = userResults.reduce((sum, r) => sum + r.responseTime, 0) / userResults.length;
-        
-        /*console.log(`Пользователь ${i}:`);
-        console.log(`  Всего операций: ${userResults.length}`);
-        console.log(`  Успешных: ${userSuccessful}`);
-        console.log(`  Неудачных: ${userFailed}`);
-        console.log(`  Среднее время ответа: ${userAvgTime.toFixed(2)}ms`);
-        console.log('');*/
-        
+
         totalSuccessful += userSuccessful;
         totalFailed += userFailed;
         totalOperations += userResults.length;
@@ -216,7 +216,7 @@ async function runSimpleAuthTest() {
     
     const overallSuccessRate = (totalSuccessful / totalOperations) * 100;
     const overallAvgTime = totalResponseTime / totalOperations;
-    const rps = totalTime > 0 ? (totalOperations / totalTime) * 1000 : 0; // Запросов в секунду
+    const rps = totalTime > 0 ? (totalOperations / totalTime) * 1000 : 0;
     
     console.log('=== Общие результаты ===');
     console.log(`Всего операций: ${totalOperations}`);

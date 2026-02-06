@@ -23,7 +23,6 @@ public class RedisCacheRepository : ICacheRepository
     public async Task<T?> GetAsync<T>(string id)
     {
         var value = await _cache.GetStringAsync(GetKey(typeof(T), id));
-        Console.WriteLine("GetAsync: " + value);
         return value == null ? default : JsonSerializer.Deserialize<T>(value);
     }
 
@@ -31,14 +30,12 @@ public class RedisCacheRepository : ICacheRepository
     {
         var json = JsonSerializer.Serialize(value);
         var options = new DistributedCacheEntryOptions().SetAbsoluteExpiration(expiration);
-        Console.WriteLine($"SetAsync: {json}");
         await _cache.SetStringAsync(GetKey(typeof(T), id), json, options);
     }
 
     public async Task RemoveAsync<T>(string id)
     {
         await _cache.RemoveAsync(GetKey(typeof(T), id));
-        Console.WriteLine("RemoveAsync: " + id);
     }
 
     private string GetKey(Type type, string id)

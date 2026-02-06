@@ -1,6 +1,6 @@
 # Secret Santa Server
 
-Backend сервер для приложения Secret Santa, реализованный на ASP.NET Core с использованием C# и PostgreSQL.
+Backend сервер для приложения Secret Santa, реализованный на ASP.NET Core.
 
 ## 📋 Описание
 
@@ -8,80 +8,83 @@ Backend сервер для приложения Secret Santa, реализов�
 
 ## 🛠️ Технологии
 
-- **Фреймворк**: ASP.NET Core (v9.0)
+- **Фреймворк**: ASP.NET Core (v10.0)
 - **Язык программирования**: C#
 - **База данных**: PostgreSQL
 - **ORM**: Entity Framework Core
+- **Кеширование**: Redis
 - **Реальное время**: SignalR
-- **Аутентификация**: JWT Bearer токены
+- **Трассировка**: OpenTelemetry + Zipkin
+- **Аутентификация**: JWT Bearer
 - **Хеширование**: BCrypt.Net-Next
 - **Именование таблиц**: EFCore.NamingConventions
 
 ## 📁 Структура проекта
 
 ```
-SecretSantaServer/
-├── Migrations/                 # Миграции Entity Framework
-├── Properties/                 # Свойства проекта
-├── src/
-│   ├── Attributes/             # Атрибуты для валидации и авторизации
-│   │   └── AuthorizeAttribute.cs
-│   ├── Controllers/            # Контроллеры API
-│   │   ├── AuthController.cs   # Контроллер аутентификации
-│   │   ├── GameController.cs   # Контроллер управления играми
-│   │   ├── OAuthController.cs  # Контроллер OAuth аутентификации
-│   │   └── UserController.cs   # Контроллер управления пользователями
-│   ├── Data/                   # Классы работы с данными
-│   │   ├── ApplicationDbContext.cs  # Контекст базы данных
-│   │   └── IDbContext.cs            # Интерфейс контекста базы данных
-│   ├── DTOs/                   # Объекты передачи данных
-│   │   ├── CreateGameRequest.cs     # Запрос на создание игры
-│   │   ├── EmailLoginRequest.cs     # Запрос на вход по email
-│   │   ├── EmailRegisterRequest.cs  # Запрос на регистрацию по email
-│   │   ├── EventDto.cs              # DTO события
-│   │   ├── GameDto.cs               # DTO игры
-│   │   ├── GameMemberDto.cs         # DTO участника игры
-│   │   ├── Result.cs                # Обертка результата операции
-│   │   ├── UpdateGameRequest.cs     # Запрос на обновление игры
-│   │   ├── UserAndTokensDto.cs      # DTO пользователя и токенов
-│   │   ├── UserDto.cs               # DTO пользователя
-│   │   ├── UserProfileDto.cs        # DTO профиля пользователя
-│   │   └── WishLetterDto.cs         # DTO письма с пожеланиями
-│   ├── Enums/                  # Перечисления
-│   │   ├── GameStatus.cs       # Статусы игры
-│   │   ├── OAuthProvider.cs    # Провайдеры OAuth
-│   │   └── Role.cs             # Роли пользователей
-│   ├── Hubs/                   # SignalR хабы
-│   │   └── GameHub.cs          # Хаб управления играми
-│   ├── Models/                 # Модели доменной области
-│   │   ├── Assignment.cs       # Назначение (кто дарит кому)
-│   │   ├── Game.cs             # Модель игры
-│   │   ├── GameMember.cs       # Модель участника игры
-│   │   ├── RefreshToken.cs     # Модель токена обновления
-│   │   ├── User.cs             # Модель пользователя
-│   │   └── UserCredentials.cs  # Модель учетных данных пользователя
-│   ├── Providers/              # Провайдеры
-│   │   └── JwtProvider.cs      # Провайдер JWT токенов
-│   ├── Services/               # Бизнес-логика
-│   │   ├── AssignmentService.cs   # Сервис назначений
-│   │   ├── AuthService.cs         # Сервис аутентификации
-│   │   ├── GameService.cs         # Сервис игр
-│   │   ├── OAuthService.cs        # Сервис OAuth
-│   │   └── UserService.cs         # Сервис пользователей
-│   │   ├── IAssignmentService.cs  # Интерфейс сервиса назначений
-│   │   ├── IAuthService.cs        # Интерфейс сервиса аутентификации
-│   │   ├── IGameService.cs        # Интерфейс сервиса игр
-│   │   ├── IOAuthService.cs       # Интерфейс сервиса OAuth
-│   │   └── IUserService.cs        # Интерфейс сервиса пользователей
-│   ├── Utils/                  # Вспомогательные утилиты
-│   │   ├── CryptoUtils.cs      # Утилиты шифрования
-│   │   ├── EmailValidator.cs   # Утилита валидации email
-│   │   └── PasswordValidator.cs # Утилита валидации пароля
-│   └── Program.cs              # Точка входа приложения
-├── appsettings.json            # Конфигурация приложения
-├── appsettings.Development.json # Конфигурация для разработки
-├── SecretSantaServer.csproj    # Файл проекта
-└── Dockerfile                  # Docker конфигурация
+src
+├── Attributes
+│   ├── EmailValidateAttribute.cs
+│   └── NoWhiteSpace.cs
+├── Controllers
+│   ├── AuthController.cs
+│   ├── GameController.cs
+│   ├── OAuthController.cs
+│   └── UserController.cs
+├── Data
+│   ├── ApplicationDbContext.cs
+│   ├── ICacheRepository.cs
+│   ├── IDbContext.cs
+│   └── RedisCacheRepository.cs
+├── DTOs
+│   ├── CreateGameRequest.cs
+│   ├── EmailLoginRequest.cs
+│   ├── EmailRegisterRequest.cs
+│   ├── EventDto.cs
+│   ├── GameDto.cs
+│   ├── GameMemberDto.cs
+│   ├── Result.cs
+│   ├── UpdateGameRequest.cs
+│   ├── UserAndAccessTokenDto.cs
+│   ├── UserAuthInfoDto.cs
+│   ├── UserDto.cs
+│   ├── UserProfileDto.cs
+│   ├── UserTokenInfo.cs
+│   └── WishLetterDto.cs
+├── Enums
+│   ├── GameStatus.cs
+│   ├── OAuthProvider.cs
+│   └── Role.cs
+├── Hubs
+│   └── GameHub.cs
+├── Models
+│   ├── Assignment.cs
+│   ├── Game.cs
+│   ├── GameMember.cs
+│   ├── UserCredentials.cs
+│   └── User.cs
+├── Program.cs
+├── Providers
+│   ├── GithubOAuthClient.cs
+│   ├── GoogleOAuthClient.cs
+│   └── IOAuthClient.cs
+├── Services
+│   ├── AssignmentService.cs
+│   ├── AuthService.cs
+│   ├── GameService.cs
+│   ├── IAssignmentService.cs
+│   ├── IAuthService.cs
+│   ├── IGameService.cs
+│   ├── IOAuthService.cs
+│   ├── IUserService.cs
+│   ├── OAuthService.cs
+│   └── UserService.cs
+└── Utils
+    ├── IAccessTokenGenerator.cs
+    ├── JwtAccessTokenGenerator.cs
+    └── RefreshTokenGenerator.cs
+
+
 ```
 
 ## 🚀 Запуск приложения

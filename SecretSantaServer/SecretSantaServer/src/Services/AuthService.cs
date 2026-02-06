@@ -39,6 +39,7 @@ public class AuthService : IAuthService
             .AsNoTracking()
             .Include(x=>x.Credential)
             .FirstOrDefaultAsync(u => u.Credential.Email == request.Email);
+        
         if (foundedUser == null || !BCrypt.Net.BCrypt.Verify(request.Password, foundedUser.Credential.PasswordHash))
             return Result<UserAuthInfoDto>.Failure($"Wrong Email Or Password", StatusCodes.Status401Unauthorized);
 
@@ -90,7 +91,7 @@ public class AuthService : IAuthService
             Name = request.Name,
             Credential = new(){
                 Email = request.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, 10)
             }
         };
 
