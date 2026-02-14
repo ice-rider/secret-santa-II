@@ -1,0 +1,102 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: secret-santa-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: secret_santa
+      POSTGRES_USER: santa_clause
+      POSTGRES_PASSWORD: LF=&@q.]N&ECt>-|Wj)l>x.#+WUb2Jymp1H0KIDyH6d&!7Byawk]eMIxX
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - 5432
+    networks:
+      - secret-santa-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U santa_clause -d secret_santa"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8.4
+    container_name: secret-santa-redis
+    restart: always
+    networks:
+      - secret-santa-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: ghcr.io/ice-rider/secret-santa-backend:latest
+    container_name: server
+    restart: always
+    expose:
+      - 8080
+    env_file:
+      - .env
+    environment:
+      - ConnectionStrings__PostgresConnection=Host=postgres;Port=5432;Database=secret_santa;Username=santa_clause;Password=LF=&@q.]N&ECt>-|Wj)l>x.#+WUb2Jymp1H0KIDyH6d&!7Byawk]eMIxX;Maximum Pool Size=500
+      - ZipkinEndpoint=http://zipkin:9411/api/v2/spans
+      - Frontend__Url=http://localhost
+      - Frontend__AuthCallback=http://localhost
+      - Frontend__GameStatusUpdatedMethod=GameStatus
+      - Frontend__UserJoinMethod=UserJoin
+      - Frontend__UserExitMethod=UserExit
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - secret-santa-network
+
+  # Frontend web application
+  frontend:
+    image: ghcr.io/ice-rider/secret-santa-frontend
+    
+
+    container_name: secret-santa-frontend
+    restart: always
+    expose:
+      - 80
+    depends_on:
+      - backend
+    networks:
+      - secret-santa-network
+
+  # Nginx reverse proxy
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx-fixed.Dockerfile
+    container_name: secret-santa-nginx
+    restart: always
+    ports:
+      - "80:80"
+      # Закомментирован порт 443, так как SSL отключен
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - secret-santa-network
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    environment:
+      - STORAGE_TYPE=mem
+    networks:
+      - secret-santa-network
+
+volumes:
+  postgres_data:
+
+networks:
+  secret-santa-network:
+    driver: bridge
