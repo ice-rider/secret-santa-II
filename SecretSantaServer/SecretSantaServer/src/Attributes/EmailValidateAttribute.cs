@@ -26,6 +26,17 @@ public class EmailValidateAttribute : ValidationAttribute
         if (string.IsNullOrEmpty(localPart) || string.IsNullOrEmpty(domain))
             return new ValidationResult(ErrorMessage ?? "Email is missing local or domain part.");
 
+        if (localPart.Any(c => !IsValidChar(c, isDomain: false)))
+            return new ValidationResult(ErrorMessage ?? "Local part contains invalid characters.");
+        
+        var validationResult = CheckDomain(domain);
+        if (validationResult != null) return validationResult;
+
+        return ValidationResult.Success;
+    }
+
+    private ValidationResult? CheckDomain(string domain)
+    {
         if (!domain.Contains('.'))
             return new ValidationResult(ErrorMessage ?? "Domain must contain a dot (e.g. gmail.com).");
 
@@ -35,20 +46,17 @@ public class EmailValidateAttribute : ValidationAttribute
         if (domain.Contains(".."))
             return new ValidationResult(ErrorMessage ?? "Domain cannot contain consecutive dots.");
 
-        bool IsValidChar(char c, bool isDomain)
-        {
-            if (char.IsLetterOrDigit(c)) return true;
-            if (_prohibitedChars.Contains(c)) return true;
-            if (!isDomain && _prohibitedCharsInDomain.Contains(c)) return true;
-            return false;
-        }
-
-        if (localPart.Any(c => !IsValidChar(c, isDomain: false)))
-            return new ValidationResult(ErrorMessage ?? "Local part contains invalid characters.");
-
         if (domain.Any(c => !IsValidChar(c, isDomain: true)))
             return new ValidationResult(ErrorMessage ?? "Domain contains invalid characters.");
+        
+        return null;
+    }
 
-        return ValidationResult.Success;
+    bool IsValidChar(char c, bool isDomain)
+    {
+        if (char.IsLetterOrDigit(c)) return true;
+        if (_prohibitedChars.Contains(c)) return true;
+        if (!isDomain && _prohibitedCharsInDomain.Contains(c)) return true;
+        return false;
     }
 }
